@@ -1,0 +1,93 @@
+"""generator_catalog.py
+
+Contains functions to generate and validate a product catalog for synthetic data generation.
+
+Functions:
+- generate_product_catalog: Creates a list of fake product entries using optional category vocabulary and Faker for realistic product names.
+- validate_catalog_schema: Validates product catalog entries against expected schema and types, raising errors on mismatch.
+
+This module is part of the story_generators package and supports modular, realistic synthetic data pipelines.
+"""
+import random
+from .generator_common_utils import get_vocab, get_param
+
+def generate_product_catalog(n=100, faker=None, config=None):
+    """
+    Generate a list of fake products for catalog simulations.
+    Returns a list of dicts with standardized schema:
+    {
+        "product_id": int,
+        "product_name": str,
+        "category": str,
+        "unit_price": float,
+        "inventory_quantity": int
+    }
+    """
+    faker = faker or __import__('faker').Faker()
+    # Use get_param and get_vocab to safely access config, consistent with other generators
+    min_price = get_param(config, "min_price", 5.0)
+    max_price = get_param(config, "max_price", 500.0)
+    category_vocab = get_vocab(config, "category_vocab", {})
+
+    catalog = []
+    use_vocab = category_vocab is not None and bool(category_vocab)
+    categories = list(category_vocab.keys()) if category_vocab else []
+    for i in range(1, n + 1):
+        if use_vocab and categories:
+            category = random.choice(categories)
+            vocab = category_vocab.get(category, {})
+            adjectives = vocab.get("adjectives", [])
+            nouns = vocab.get("nouns", [])
+            if adjectives and nouns:
+                adj = random.choice(adjectives)
+                noun = random.choice(nouns)
+                product_name = f"{adj} {noun}"
+            else:
+                # Fallback if a category has no adjectives/nouns.
+                # Combine two words to create a more plausible, robust product name.
+                product_name = f"{faker.word().capitalize()} {faker.word()}"
+        else:
+            category = faker.word().capitalize()
+            product_name = f"{faker.word().capitalize()} {faker.word()}"
+        product = {
+            "product_id": i,
+            "product_name": product_name,
+            "category": category,
+            "unit_price": round(random.uniform(min_price, max_price), 2),
+            "inventory_quantity": random.randint(0, 1000)
+        }
+        catalog.append(product)
+    return catalog
+
+
+def validate_catalog_schema(catalog):
+    """
+    Validate that each product in the catalog matches the expected schema.
+    Raises ValueError if schema is violated.
+    """
+    required_fields = {
+        "product_id": int,
+        "product_name": str,
+        "category": str,
+        "unit_price": float,
+        "inventory_quantity": int
+    }
+    for idx, product in enumerate(catalog):
+        for field, expected_type in required_fields.items():
+            if field not in product:
+                raise ValueError(f"Missing field '{field}' in product at index {idx}")
+            if not isinstance(product[field], expected_type):
+                # Allow int for float fields as well (Python quirk)
+                if expected_type is float and isinstance(product[field], int):
+                    continue
+                raise ValueError(
+                    f"Field '{field}' in product at index {idx} is not of type {expected_type.__name__}"
+                )
+
+def product_catalog_lookup_generator(columns, num_rows, faker, lookup_cache, config=None):
+    """
+    Lookup-based generator for product_catalog table to be used by the runner.
+    Returns the pre-generated product catalog from the lookup_cache.
+    The other arguments are for compatibility with the runner's generator signature.
+    """
+    return lookup_cache.get("product_catalog", [])

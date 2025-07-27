@@ -1,0 +1,11 @@
+pandas
+pyyaml
+faker
+joblib
+mlflow
+scikit-learn
+matplotlib
+plotly
+shap
+black
+jupyter

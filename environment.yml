@@ -1,0 +1,21 @@
+name: sql_stories_env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pandas
+  - pyyaml
+  - faker
+  - jupyter
+  - sqlite
+  - black
+  - ipykernel
+  - pip:
+      - joblib
+      - mlflow
+      - scikit-learn
+      - matplotlib
+      - plotly
+      - shap
