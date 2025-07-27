@@ -1,4 +1,4 @@
-name: sql_stories_env
+name: ecom_data_gen_env
 channels:
   - defaults
   - conda-forge
@@ -10,12 +10,11 @@ dependencies:
   - faker
   - jupyter
   - sqlite
-  - black
+  - numpy
   - ipykernel
   - pip:
-      - joblib
-      - mlflow
-      - scikit-learn
+      - black
+      - ruff
+      - pytest
       - matplotlib
       - plotly
-      - shap

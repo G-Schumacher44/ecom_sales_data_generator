@@ -1,0 +1,42 @@
+[project]
+name = "ecom-sales-data-generator"
+version = "0.1.0"
+description = "Modular retail data generator with YAML config, realistic mess injection, and post-export QA tests."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Garrett Schumacher", email = "me@garrettschumacher.com" }
+]
+license = "MIT"
+
+dependencies = [
+  "pandas",
+  "numpy",
+  "pyyaml",
+  "faker"
+]
+
+[project.optional-dependencies]
+dev = ["black", "ruff", "pytest"]
+
+[project.scripts]
+ecomgen = "ecomgen.run_data_generation:main"
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml"]
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+select = ["E", "F"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

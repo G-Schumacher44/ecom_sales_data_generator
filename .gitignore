@@ -1,0 +1,32 @@
+
+
+# VSCode and system
+.vscode/
+.DS_Store
+
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Conda / virtual environments
+.env/
+.venv/
+*.env
+*.venv
+
+# Build artifacts
+build/
+dist/
+*.egg
+*.whl
+
+# Output and generated files
+output/
+*.db
+*.log
+
+# Local-only configs and generated entrypoints
+config/ecom_sales_gen_template.yaml
+src/ecomgen

@@ -4,11 +4,16 @@ Module for loading and accessing configuration from a YAML file for SQL story ge
 
 import yaml
 from pathlib import Path
+import os
 
 class Config:
     def __init__(self, yaml_path=None):
         # Default path to YAML config
-        self.yaml_path = yaml_path or (Path(__file__).parent.parent.parent / 'config' / 'story_01_upstart_retailer.yaml')
+        default_path = Path(__file__).parent.parent.parent / 'config' / 'ecom_sales_gen_template.yaml'
+        self.yaml_path = Path(
+            yaml_path
+            or os.getenv("CONFIG", str(default_path))
+        )
         self._load_yaml()
 
     def _load_yaml(self):
@@ -24,6 +29,7 @@ class Config:
         self.agent_pool = self.raw_config.get('agent_pool', {'enabled': False, 'agents': []})
         self.customer_enrichment = self.raw_config.get('customer_enrichment', {})
         self.channel_rules = self.raw_config.get('channel_rules', {})
+        self.config = self.raw_config
 
     # Example getter for table by name
     def get_table_config(self, table_name):

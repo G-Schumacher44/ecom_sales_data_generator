@@ -35,16 +35,16 @@ def inject_random_nulls(df: pd.DataFrame, columns: list, prob: float):
 def main():
     parser = argparse.ArgumentParser(description="Inject messiness into generated CSV data.")
     parser.add_argument("--data-dir", type=str, required=True, help="Directory containing CSV files.")
-    parser.add_argument("--messiness-level", type=str, default="none",
-                        choices=["none", "light_mess", "medium_mess", "heavy_mess"], help="Level of messiness to inject.")
+    parser.add_argument("--messiness-level", type=str, default="baseline",
+                        choices=["baseline", "light_mess", "medium_mess", "heavy_mess"], help="Level of messiness to inject.")
     parser.add_argument('--config', type=str, default=None, help='Path to YAML config file for advanced injections.')
     args = parser.parse_args()
 
     data_dir = args.data_dir
     messiness_level = args.messiness_level
 
-    if messiness_level == "none":
-        print("Skipping messiness injection as level is 'none'.")
+    if messiness_level == "baseline":
+        print("Skipping messiness injection as level is 'baseline'.")
         return
 
     # Load config for advanced injections
