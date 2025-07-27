@@ -187,6 +187,21 @@ ___
 
 </details>
 
+<details>
+
+<summary>💡 Sample AI Prompt for Scenario Design</summary>
+
+Use this data generator alongside AI to create realistic business analysis scenarios. For the best results, upload your generated database to enable context-aware assistance.
+
+```text
+I have a synthetic e-commerce dataset with tables for orders, returns, customers, and products. Please help me design a business scenario that reflects a real-world problem an analyst might face.
+
+Include a short background, 2–3 guiding business questions, and examples of SQL queries that could help answer them.
+```
+
+</details>
+
+---
 
 ## ▶️ Setup 
 
