@@ -72,7 +72,7 @@ I built this system to reinforce, refresh, and evaluate my SQL skills through pr
 
 **Why build a system and not just a script?**
 
-You can see this engine in action in `sql_stories(https://github.com/G-Schumacher44/sql_stories)`, where I use AI-generated prompts to simulate realistic business scenarios and investigative workflows. This pairing gives me an unlimited sandbox to practice SQL storytelling, data diagnostics, and real-world problem solving — all powered by the datasets generated here.
+You can see this engine in action in [SQL Stories Demo](https://github.com/G-Schumacher44/sql_stories), where I use AI-generated prompts to simulate realistic business scenarios and investigative workflows. This pairing gives me an unlimited sandbox to practice SQL storytelling, data diagnostics, and real-world problem solving — all powered by the datasets generated here.
 
 **Human-readable. YAML-driven. Designed for learning.**
 
