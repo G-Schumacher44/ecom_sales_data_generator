@@ -29,4 +29,4 @@ output/
 
 # Local-only configs and generated entrypoints
 config/ecom_sales_gen_template.yaml
-src/ecomgen
+src/ecomgen.DS_Store
