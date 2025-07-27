@@ -255,7 +255,7 @@ ___
 **Standard clean generation:**
 
 ```bash
-ecomgen --config config/ecom_sales_gen_template.yaml --messiness-level none
+ecomgen --config config/ecom_sales_gen_template.yaml --messiness-level baseline
 ```
 
 ___
