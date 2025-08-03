@@ -28,5 +28,6 @@ output/
 *.log
 
 # Local-only configs and generated entrypoints
-config/ecom_sales_gen_template.yaml
+config/*
+!config/ecom_sales_gen_template.yaml
 src/ecomgen.DS_Store

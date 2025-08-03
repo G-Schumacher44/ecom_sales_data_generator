@@ -73,7 +73,7 @@ I built this system to reinforce, refresh, and evaluate my SQL skills through pr
 
 **Why build a system and not just a script?**
 
-This tool doesn’t just generate data — it builds a complete relational database simulation. We designed a system to go beyond isolated datasets by embedding referential logic, conditionally required fields, and analytical scenarios into the generation process.
+This tool doesn’t just generate data — it builds a complete relational database simulation. I designed a system to go beyond isolated datasets by embedding referential logic, conditionally required fields, and analytical scenarios into the generation process.
 
 You can see this engine in action in [SQL Stories Demo](https://github.com/G-Schumacher44/sql_stories), where I use AI-generated prompts to simulate realistic business scenarios and investigative workflows. This pairing gives me an unlimited sandbox to practice SQL storytelling, data diagnostics, and real-world problem solving — all powered by the datasets generated here.
 
@@ -92,7 +92,7 @@ You can see this engine in action in [SQL Stories Demo](https://github.com/G-Sch
   - messiness injection (light/medium/heavy)
   - embedded CLI and Pytest-driven QA suite
   - config validation and baseline data audits
-- Tested with `sql_stories` for simulated analytics workflows
+- Tested with [`SQL Stories`](https://github.com/G-Schumacher44/sql_stories) for simulated analytics workflows
 
 ---
 
