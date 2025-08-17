@@ -7,7 +7,7 @@
 <p align="center">
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue">
   <img alt="Status" src="https://img.shields.io/badge/status-alpha-lightgrey">
-  <img alt="Version" src="https://img.shields.io/badge/version-v0.1.0-blueviolet">
+  <img alt="Version" src="https://img.shields.io/badge/version-v0.2.0-blueviolet">
 </p>
 
 # 🧪 Testing and Validation Guide
@@ -22,11 +22,11 @@ This project includes a comprehensive testing framework to ensure the integrity,
 - [🧪 Testing and Validation Guide](#-testing-and-validation-guide)
   - [📚 Table of Contents](#-table-of-contents)
   - [🎯 Test Philosophy](#-test-philosophy)
-  - [Main QA Suite (`qa_tests.py`)](#-main-qa-suite-qa_testspymain-qa-suite-qa_testspy)
-    - Key Validation Functions
-    - Interpreting the Output
-  - 2. Big Audit (`big_audit.py`)
-  - 3. Pytest Suite (`pytests/`)
+  - [1. Main QA Suite (`qa_tests.py`)](#1-main-qa-suite-qa_testspy)
+    - [Key Validation Functions](#key-validation-functions)
+    - [Interpreting the Output](#interpreting-the-output)
+  - [2. Big Audit (`big_audit.py`)](#2-big-audit-big_auditpy)
+  - [3. Pytest Suite (`src/pytests/`)](#3-pytest-suite-srcpytests)
 
 ---
 
@@ -34,15 +34,13 @@ This project includes a comprehensive testing framework to ensure the integrity,
 
 The testing framework is divided into three main parts, each with a distinct purpose:
 
- **Main QA Suite (`qa_tests.py`)**: A suite of critical data quality checks that runs automatically after every data generation. Its purpose is to catch fundamental errors in the data.
-
-**Big Audit (`big_audit.py`)**: A script that provides a high-level statistical summary of the generated data. It's designed for manual inspection and business logic validation rather than hard-fail checks.
-
-**Pytest Suite (`src/pytests/`)**: A set of unit tests for developers to validate the core logic of the configuration and data quality rules in isolation.
+1.  **Main QA Suite (`qa_tests.py`)**: A suite of critical data quality checks that runs **automatically** after every data generation. Its purpose is to catch fundamental errors in the data.
+2.  **Big Audit (`big_audit.py`)**: A script that provides a high-level statistical summary of the generated data, also run automatically. It's designed for manual inspection and business logic validation rather than hard-fail checks.
+3.  **Pytest Suite (`src/pytests/`)**: A set of unit tests for developers to validate the core logic of the configuration and data quality rules in isolation.
 
 ---
 
-## Main QA Suite (`qa_tests.py`)
+## 1. Main QA Suite (`qa_tests.py`)
 
 This is the most important test suite for ensuring data quality. It is **executed automatically** by the `ecomgen` command.
 
@@ -65,7 +63,7 @@ This is the most important test suite for ensuring data quality. It is **execute
 
 ---
 
-## Big Audit (`big_audit.py`)
+## 2. Big Audit (`big_audit.py`)
 
 This script is also run automatically by the `ecomgen` command. It prints summaries, null counts, and distributions for manual review.
 
@@ -73,7 +71,7 @@ This script is also run automatically by the `ecomgen` command. It prints summar
 
 ---
 
-## Pytest Suite (`src/pytests/`)
+## 3. Pytest Suite (`src/pytests/`)
 
 This suite is primarily for developers working on the generator itself. It contains unit tests that validate the core logic of the configuration parser and the data quality rules in a controlled environment.
 
@@ -85,3 +83,7 @@ pytest
 ```
 
 By using these tools, you can have high confidence in the quality and realism of the data you generate.
+
+___
+
+🔝 [Back to Top](#top) | ⬅️ [Back to Project README](README.md)

@@ -236,17 +236,17 @@ Use the YAML-based configuration system to control the size, structure, and mess
 <details>
 <summary><strong>🧰 YAML Template</strong></summary>
 
-- **File:** `📝 ecom_sales_gen_template.yaml`
+- **File:** [`📝 ecom_sales_gen_template.yaml`](config/ecom_sales_gen_template.yaml)
 - **Purpose:** Defines how much data is generated, what kind of products are included, and the messiness level of the output.  
 - **Use case:** Start here for most use cases. Adjust row counts, return rates, vocab, etc.
 
 </details>
 
 <details>
-<summary><strong>📖 Config Guide</strong></summary>
+<summary><strong>📖 Full Config Guide</strong></summary>
 
-- **File:** `📘 config_guide.md`
-- **Purpose:** Explains each YAML field line-by-line  
+- **File:** [`📘 config_guide.md`](CONFIG_GUIDE.md)
+- **Purpose:** Explains how the YAML configuration works 
 - **Use case:** Perfect when you're creating your own custom scenario or tweaking advanced parameters
 
 </details>
@@ -330,3 +330,5 @@ This project is licensed under the [MIT License](LICENSE).</file>
 ## 🔗 Ready to Explore?
 
 Head to the [Config Guide](config_guide.md) to start generating your own custom e-commerce datasets — or visit the [SQL Stories Demo](https://github.com/G-Schumacher44/sql_stories) to see it used in real-world SQL challenges.
+
+🔝 [Back to Top](#top) 
