@@ -27,28 +27,21 @@ def inject_random_nulls(df: pd.DataFrame, columns: list, prob: float):
     """Randomly replaces non-null values with NaN in specified columns."""
     for col in columns:
         if col in df.columns:
+            # If the column is boolean, convert it to object to allow for NaNs
+            if pd.api.types.is_bool_dtype(df[col]):
+                df[col] = df[col].astype(object)
             # Only target non-nulls for injection
             mask = df[col].notna() & (df[col].apply(lambda x: random.random() < prob))
             df.loc[mask, col] = np.nan
     return df
 
-def main():
-    parser = argparse.ArgumentParser(description="Inject messiness into generated CSV data.")
-    parser.add_argument("--data-dir", type=str, required=True, help="Directory containing CSV files.")
-    parser.add_argument("--messiness-level", type=str, default="baseline",
-                        choices=["baseline", "light_mess", "medium_mess", "heavy_mess"], help="Level of messiness to inject.")
-    parser.add_argument('--config', type=str, default=None, help='Path to YAML config file for advanced injections.')
-    args = parser.parse_args()
-
-    data_dir = args.data_dir
-    messiness_level = args.messiness_level
-
+def run_injection(data_dir: str, messiness_level: str, config_path: str = None):
     if messiness_level == "baseline":
         print("Skipping messiness injection as level is 'baseline'.")
         return
 
     # Load config for advanced injections
-    config = Config(yaml_path=args.config) if args.config else None
+    config = Config(yaml_path=config_path) if config_path else None
 
     print(f"Applying '{messiness_level}' messiness injection to data in: {data_dir}")
 

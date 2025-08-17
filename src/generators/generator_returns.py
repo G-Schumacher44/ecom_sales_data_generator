@@ -118,6 +118,11 @@ def generate_returns(columns: List[str], num_rows: int, faker_instance: Faker, l
         print("Warning: Order items not found. Cannot generate returns with category-specific rates.")
         return []
 
+    # NEW: Calculate number of returns based on a rate, not a fixed number
+    return_rate = config.get_parameter("return_rate", 0.20)
+    num_returns_to_generate = int(len(orders) * return_rate)
+    print(f"  Targeting {num_returns_to_generate} returns based on a {return_rate:.2%} return rate for {len(orders)} orders.")
+
     # Get vocab and parameterized values from config
     return_reasons = get_vocab(config, "return_reasons", ["Defective", "No longer needed", "Wrong item", "Other"])
     all_return_channels = get_vocab(config, "return_channels", ["Web", "Phone"])
@@ -152,11 +157,17 @@ def generate_returns(columns: List[str], num_rows: int, faker_instance: Faker, l
         if random.random() < propensity:
             returnable_orders.append(order)
 
+    # Instead of using all returnable_orders, sample from them to meet the target rate
+    if len(returnable_orders) > num_returns_to_generate:
+        orders_to_return = random.sample(returnable_orders, num_returns_to_generate)
+    else:
+        orders_to_return = returnable_orders # Return all possible if less than target
+
     if global_end_date is None:
         global_end_date = datetime.now().date()
 
     returns = []
-    for order in returnable_orders:
+    for order in orders_to_return:
         return_id = faker_instance.unique.bothify(text="RET-########")
         return_type = random.choice(["Partial", "Full"])
         order_date_str = order["order_date"]
@@ -226,16 +237,8 @@ def generate_returns(columns: List[str], num_rows: int, faker_instance: Faker, l
 
         matching_order = next((o for o in orders if o['order_id'] == ret['order_id']), None)
         if matching_order:
-            customers = lookup_cache['customers']
-            if hasattr(customers, 'iterrows'):  # likely a DataFrame
-                customers_iter = (row._asdict() if hasattr(row, '_asdict') else row.to_dict() for _, row in customers.iterrows())
-            else:
-                customers_iter = customers
-
-            matching_customer = next(
-                (c for c in customers_iter if c['customer_id'] == matching_order['customer_id']),
-                None
-            )
+            # Assuming lookup_cache['customers'] is a list of dicts
+            matching_customer = next((c for c in lookup_cache['customers'] if c['customer_id'] == matching_order['customer_id']), None)
             ret['email'] = matching_customer['email'] if matching_customer else None
         else:
             ret['email'] = None

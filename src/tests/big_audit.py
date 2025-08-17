@@ -7,25 +7,8 @@ def load_csv(name: str, data_dir: str) -> pd.DataFrame:
     """Read ``name`` from ``data_dir`` and return a DataFrame."""
     return pd.read_csv(os.path.join(data_dir, name))
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Run big audit checks on CSV data")
-    parser.add_argument(
-        "--data-dir",
-        required=True,
-        help="Directory containing generated CSV files",
-    )
-    parser.add_argument(
-        "--messiness",
-        type=str,
-        choices=["baseline", "light_mess", "medium_mess", "heavy_mess"],
-        default="baseline",
-        help="Level of messiness tolerance (not actively used in all checks, but accepted).",
-    )
-    args = parser.parse_args()
-
-    data_dir = args.data_dir
-    messiness = args.messiness
-
+def run_big_audit(data_dir: str, messiness: str):
+    """Runs a series of data integrity and business logic checks on the generated CSVs."""
     # Load CSV files from the provided directory
     orders = load_csv("orders.csv", data_dir)
     order_items = load_csv("order_items.csv", data_dir)
@@ -125,6 +108,23 @@ def main() -> None:
     print("Order Items quantity stats:\n", order_items['quantity'].describe())
     print("Return Items quantity_returned stats:\n", return_items['quantity_returned'].describe())
 
+def main() -> None:
+    """Command-line entry point."""
+    parser = argparse.ArgumentParser(description="Run big audit checks on CSV data")
+    parser.add_argument(
+        "--data-dir",
+        required=True,
+        help="Directory containing generated CSV files",
+    )
+    parser.add_argument(
+        "--messiness",
+        type=str,
+        choices=["baseline", "light_mess", "medium_mess", "heavy_mess"],
+        default="baseline",
+        help="Level of messiness tolerance (not actively used in all checks, but accepted).",
+    )
+    args = parser.parse_args()
+    run_big_audit(data_dir=args.data_dir, messiness=args.messiness)
 
 if __name__ == "__main__":
     main()

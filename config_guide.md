@@ -22,12 +22,12 @@ This guide explains how to structure and modify the YAML configuration file (`ec
 
 ## 📚 Table of Contents
 
-- [� Config Guide for ecom\_sales\_data\_generator](#-config-guide-for-ecom_sales_data_generator)
+- [📘 Config Guide for ecom\_sales\_data\_generator](#-config-guide-for-ecom_sales_data_generator)
   - [📚 Table of Contents](#-table-of-contents)
   - [📁 Top-Level Sections](#-top-level-sections)
-    - [`row_counts`](#row_counts)
+    - [`tables` → `generate`](#tables--generate)
     - [`row_generators`](#row_generators)
-    - [`lookup_tables`](#lookup_tables)
+    - [`lookup_config`](#lookup_config)
     - [`baseline_return_reason_weights`](#baseline_return_reason_weights)
     - [`vocab`](#vocab)
     - [`messiness_settings`](#messiness_settings)
@@ -35,7 +35,9 @@ This guide explains how to structure and modify the YAML configuration file (`ec
   - [🛠️ Notes](#️-notes)
     - [`tables` (Advanced Schema Definitions)](#tables-advanced-schema-definitions)
     - [`channel_rules`](#channel_rules)
-  - [🔁 `Testing and Validation`](#testing-and-validation)
+    - [`Testing and Validation`](#testing-and-validation)
+    - [🔁 Quick Validation Loop](#-quick-validation-loop)
+  - [🧪 PyTest Validation](#-pytest-validation)
 
 
 >⬅️ [Back to Project README](README.md)
