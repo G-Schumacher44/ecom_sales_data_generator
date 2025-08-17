@@ -156,14 +156,9 @@ def main():
 
             lookup_rows = lookup_cache.get(lookup_name, [])
             if lookup_rows:
-                yaml_table_config = config.get_table_config(lookup_name)
-                if yaml_table_config:
-                    lookup_columns = [col['name'] for col in yaml_table_config.get('columns', [])]
-                else:
-                    lookup_columns = list(lookup_rows[0].keys())
-                lookup_csv_path = os.path.join(output_dir, f"{lookup_name}.csv")
-                save_table_to_csv(lookup_rows, lookup_columns, lookup_csv_path)
-                print(f"💾 Saved CSV for lookup catalog '{lookup_name}' ➜ {lookup_csv_path}")
+                # Saving is now handled in the main table processing loop to avoid redundancy.
+                # This loop just populates the cache.
+                print(f"✅ Cached {len(lookup_rows)} rows for lookup table '{lookup_name}'.")
 
 
     tables = config.tables
@@ -186,7 +181,11 @@ def main():
         else:
             num_rows = table.get('generate', 100)
 
-        if table_name in row_generators:
+        # Check if the table data was already generated as a lookup table
+        if table_name in lookup_cache and isinstance(lookup_cache[table_name], list):
+            rows = lookup_cache[table_name]
+            print(f"✅ Using cached rows for table '{table_name}'")
+        elif table_name in row_generators:
             print(f"🔄 Generating rows for table '{table_name}' with num_rows={num_rows}")
             if table_name == 'shopping_carts':
                 rows = row_generators[table_name](columns, num_rows, faker_instance, lookup_cache, config)

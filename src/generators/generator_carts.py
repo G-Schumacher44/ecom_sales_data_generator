@@ -7,6 +7,7 @@ pre-purchase user sessions.
 import random
 from typing import List, Dict, Any
 from collections import defaultdict
+import numpy as np
 from datetime import datetime, timedelta
 from faker import Faker
 from .generator_common_utils import get_param
@@ -27,6 +28,7 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
     if not customers:
         raise ValueError("Customers must be generated before shopping carts.")
 
+    global_start_date = lookup_cache.get("global_start_date")
     global_end_date = lookup_cache.get("global_end_date")
 
     # Get repeat purchase settings from config
@@ -42,20 +44,21 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
     for customer in customers_to_simulate:
         # All customers get at least one initial cart session
         signup_date_str = customer.get('signup_date')
-        if not signup_date_str: # Skip guests or customers with no signup date
-            continue
-        
-        try:
-            # Ensure signup_date is a date object for comparison
-            signup_date = datetime.fromisoformat(signup_date_str).date()
-        except (TypeError, ValueError):
-            continue # Skip if signup_date is invalid
 
-        # The first cart is created sometime after signup
-        first_cart_date = safe_date_between(signup_date, global_end_date)
-        last_cart_date = first_cart_date
+        first_cart_date = None
+        if signup_date_str: # Registered customer
+            try:
+                signup_date = datetime.fromisoformat(signup_date_str).date()
+                # The first cart is created sometime after signup
+                first_cart_date = safe_date_between(signup_date, global_end_date)
+            except (TypeError, ValueError):
+                continue # Skip if signup_date is invalid
+        else: # Guest customer
+            # A guest's first cart can appear anytime in the global window
+            first_cart_date = safe_date_between(global_start_date, global_end_date)
 
         # Generate the first cart
+        last_cart_date = first_cart_date
         carts.append({
             "cart_id": generate_cart_id(faker_instance),
             "customer_id": customer['customer_id'],
@@ -66,16 +69,20 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
 
         # --- Simulate Repeat Visits ---
         # Determine propensity to return based on loyalty tier
+        # NOTE: With the new Poisson model, propensity is interpreted as the average number of repeat visits (lambda).
         tier = customer.get('loyalty_tier')
-        propensity = propensity_by_tier.get(tier, propensity_by_tier.get('default', 0.1))
+        avg_repeat_visits = propensity_by_tier.get(tier, propensity_by_tier.get('default', 0.1))
 
-        # Loop to see if this customer makes repeat visits
-        while random.random() < propensity:
+        # Use a Poisson distribution to determine the number of repeat visits for this customer.
+        # This is a more robust and intuitive model than the previous `while` loop.
+        num_repeat_visits = np.random.poisson(lam=avg_repeat_visits)
+
+        for _ in range(num_repeat_visits):
             delay = random.randint(delay_range[0], delay_range[1])
             next_cart_date = last_cart_date + timedelta(days=delay)
 
             if next_cart_date > global_end_date:
-                break # Stop if the next visit is outside the global date range
+                continue # Skip this visit if it's out of bounds, but allow subsequent ones
 
             carts.append({
                 "cart_id": generate_cart_id(faker_instance),
@@ -85,7 +92,6 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
                 "cart_total": 0.0
             })
             last_cart_date = next_cart_date
-            # Optional: could add logic to decrease propensity after each visit
 
     return carts
 

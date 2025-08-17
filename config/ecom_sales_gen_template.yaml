@@ -58,6 +58,40 @@ faker_seed: 42
  # You can define parent-child links (orders → order_items), add conditional logic
  # for data integrity, and simulate realistic retail scenarios.
 tables:
+  - name: customers
+    columns:
+      - { name: customer_id, type: TEXT }
+      - { name: first_name, type: TEXT }
+      - { name: last_name, type: TEXT }
+      - { name: email, type: TEXT }
+      - { name: phone_number, type: TEXT }
+      - { name: address, type: TEXT }
+      - { name: city, type: TEXT }
+      - { name: state, type: TEXT }
+      - { name: zip_code, type: TEXT }
+      - { name: country, type: TEXT }
+      - { name: signup_date, type: DATE }
+      - { name: gender, type: TEXT }
+      - { name: age, type: INTEGER }
+      - { name: is_guest, type: BOOLEAN }
+      - { name: customer_status, type: TEXT, options: ["Active", "Inactive"], probabilities: [0.9, 0.1] }
+      - { name: signup_channel, type: TEXT }
+      - { name: loyalty_tier, type: TEXT, options: ["Bronze", "Silver", "Gold", "Platinum"] }
+      - { name: email_verified, type: BOOLEAN }
+      - { name: marketing_opt_in, type: BOOLEAN }
+      - { name: mailing_address, type: TEXT }
+      - { name: billing_address, type: TEXT }
+      - { name: loyalty_enrollment_date, type: DATE }
+      - { name: clv_bucket, type: TEXT }
+
+  - name: product_catalog
+    columns:
+      - { name: product_id, type: INTEGER }
+      - { name: product_name, type: TEXT }
+      - { name: category, type: TEXT }
+      - { name: unit_price, type: REAL }
+      - { name: inventory_quantity, type: INTEGER }
+
   - name: shopping_carts
     generate: 50000 # Increase traffic for a mid-sized retailer scenario.
     columns:
@@ -187,6 +221,10 @@ tables:
 lookup_config:
   product_catalog:
     num_products: 1286
+    min_price: 5.0
+    max_price: 250.0
+    min_inventory_quantity: 50
+    max_inventory_quantity: 100
     generator: generators.generator_catalog.generate_product_catalog
   customers:
     num_customers: 50000 # Increase the total customer base.
@@ -394,14 +432,17 @@ parameters:
   return_max_lag_days: 30
   # NEW: Settings to control repeat purchase behavior for cohort analysis
   repeat_purchase_settings:
+    # NOTE: These values represent the AVERAGE NUMBER of repeat visits (lambda for a Poisson distribution).
+    # They are calculated to produce realistic repeat PURCHASE rates after accounting for the conversion_rate.
+    # A loyal customer may visit many times before their next purchase.
     propensity_by_tier:
-      Platinum: 0.75 # 75% of Platinum customers will make another purchase
-      Gold: 0.60
-      Silver: 0.40
-      Bronze: 0.25
-      default: 0.15 # For customers with no tier
+      Platinum: 7.5  # Targets ~40% repeat purchase rate
+      Gold: 5.2      # Targets ~30% repeat purchase rate
+      Silver: 3.3    # Targets ~20% repeat purchase rate
+      Bronze: 1.5    # Targets ~10% repeat purchase rate
+      default: 0.75  # For guests and no-tier, targets ~5% repeat purchase rate
     # Time delay in days between a purchase and the next visit
-    time_delay_days_range: [20, 150]
+    time_delay_days_range: [20, 90]
   return_rate: 0.25 # NEW: Generate returns for 25% of all orders.
   # Distribution of orders by channel reflecting typical online retailer data
   order_channel_distribution: #

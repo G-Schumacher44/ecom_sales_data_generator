@@ -24,9 +24,13 @@ def generate_product_catalog(n=100, faker=None, config=None):
     }
     """
     faker = faker or __import__('faker').Faker()
-    # Use get_param and get_vocab to safely access config, consistent with other generators
-    min_price = get_param(config, "min_price", 5.0)
-    max_price = get_param(config, "max_price", 500.0)
+    # Get product-specific parameters from lookup_config for better encapsulation
+    product_lookup_params = config.lookup_config.get('product_catalog', {})
+    min_price = product_lookup_params.get("min_price", 5.0)
+    max_price = product_lookup_params.get("max_price", 500.0)
+    min_inventory = product_lookup_params.get("min_inventory_quantity", 0)
+    max_inventory = product_lookup_params.get("max_inventory_quantity", 1000)
+
     category_vocab = get_vocab(config, "category_vocab", {})
 
     catalog = []
@@ -54,7 +58,7 @@ def generate_product_catalog(n=100, faker=None, config=None):
             "product_name": product_name,
             "category": category,
             "unit_price": round(random.uniform(min_price, max_price), 2),
-            "inventory_quantity": random.randint(0, 1000)
+            "inventory_quantity": random.randint(min_inventory, max_inventory)
         }
         catalog.append(product)
     return catalog
