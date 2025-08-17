@@ -124,6 +124,7 @@ def generate_customers(num_customers=1000, faker=None, config=None, guest_shoppe
             'mailing_address': mailing_address,
             'billing_address': billing_address,
             'clv_bucket': clv_bucket,
+            'is_guest': False,
         }
 
         customers.append(customer)

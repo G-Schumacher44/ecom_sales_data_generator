@@ -7,14 +7,14 @@
 <p align="center">
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue">
   <img alt="Status" src="https://img.shields.io/badge/status-alpha-lightgrey">
-  <img alt="Version" src="https://img.shields.io/badge/version-v0.1.0-blueviolet">
+  <img alt="Version" src="https://img.shields.io/badge/version-v0.2.0-blueviolet">
 </p>
 
 ---
 
 # 🛒 Ecommerce Sales Database Generator
 
-A YAML-configurable Python engine for generating synthetic, relational e-commerce databases — designed for SQL training, analytics storytelling, and realistic pipeline testing. This system goes beyond raw data: it builds linked tables with referential integrity, configurable messiness, and built-in QA test suites to simulate real-world data challenges.
+A YAML-configurable Python engine for generating synthetic, relational e-commerce databases — designed for SQL training, analytics storytelling, and realistic pipeline testing. This system goes beyond raw data: it simulates a full customer journey from browsing session to purchase, builds linked tables with referential integrity, and includes configurable messiness and built-in QA test suites to mirror real-world data challenges.
 >📸 See it in action: [SQL Stories Demo](https://github.com/G-Schumacher44/sql_stories)
 
 ___
@@ -22,21 +22,32 @@ ___
 ## 🧩 TLDR;
 
 - Generate synthetic, realistic e-commerce data (orders, returns, customers, etc.)
-- Build a full, testable **relational database** — not just flat files
+- **New:** Simulates cart abandonment, conversion rates, and repeat purchase behavior for realistic cohort analysis.
 - YAML-controlled configuration of row volumes, faker behavior, return rates, etc.
 - Plug-and-play messiness injection (via --messiness-level flag) for simulating real-world inconsistencies 
 - Built-in QA tests: referential integrity, refund audits, return rate checks
 - CLI runner, Pytest test suite, and optional big/mess audit extensions
 - Designed for SQL project demos, portfolio datasets, and analytics onboarding
 
+---
+
+## ✨ Key Simulation Features
+
+This generator goes beyond simple row creation by simulating a complete, interconnected e-commerce ecosystem.
+
+- **Full Sales Funnel**: Models the entire customer journey from browsing to purchase. It generates a large volume of `shopping_carts` and then "converts" a small, configurable percentage into `orders`, realistically simulating cart abandonment.
+- **Time-Aware Customer Behavior**: Simulates customer return visits over a one-year period. The likelihood of a repeat purchase is tied to `loyalty_tier`, and the time between visits is randomized, creating rich data for cohort analysis.
+- **Dynamic Returns**: The number of returns is not fixed but is generated as a percentage of total orders, ensuring that return volumes scale realistically with sales.
+- **Contextual Messiness**: The messiness engine can inject not just random noise but also contextual issues, like biased return reasons based on product category or seasonal sales spikes during holiday months.
+
 <details>
 <summary> ⏯️ Quick Start</summary>
 
 1. Clone the repository  
    ```bash
-   git clone https://github.com/your-username/ecom_sales_data_generator.git
-   cd ecom_sales_data_generator. Install in editable mode  
-   ```bash
+   git clone https://github.com/G-Schumacher44/ecom_sales_data_generator.git
+   cd ecom_sales_data_generator
+   # Install in editable mode
    pip install -e .
    ```
 
@@ -84,19 +95,16 @@ You can see this engine in action in [SQL Stories Demo](https://github.com/G-Sch
 <details>
 <summary><strong>🫆 Version Release Notes</strong></summary>
 
-### ✅ v0.1.0 (Current)
+### ✅ v0.2.0 (Current)
 
-- First production-ready release
-- YAML-driven sales data generator with support for:
-  - orders, order_items, returns, customers, and products
-  - messiness injection (light/medium/heavy)
-  - embedded CLI and Pytest-driven QA suite
-  - config validation and baseline data audits
-- Tested with [`SQL Stories`](https://github.com/G-Schumacher44/sql_stories) for simulated analytics workflows
+- **Full Funnel Simulation**: Added `shopping_carts` and `cart_items` to model the complete customer journey from browsing session to purchase.
+- **Realistic Conversion Modeling**: Introduced a configurable `conversion_rate` to simulate cart abandonment (e.g., a low 3% rate for a struggling store vs. 8-10% for an average one) and a `repeat_purchase_settings` block to model customer lifecycle behavior.
+- **Enhanced for Cohort Analysis**: The generator now creates time-aware repeat purchase data based on customer loyalty tiers, enabling realistic retention and LTV analysis.
+- Expanded YAML configuration for fine-grained control over customer behavior.
 
 ---
 
-### 🔮 v0.2.0 (Planned)
+### 🔮 v0.3.0 (Planned)
 
 - Simulated data spike events - e.g., *"holiday sales surge"*, *"flash sales"*, ect..ect.
 - B2B purchase logic: lines of credit, bulk buying behavior
@@ -104,6 +112,18 @@ You can see this engine in action in [SQL Stories Demo](https://github.com/G-Sch
 - Shipping & fulfillment enrichment: lead times, delivery lag, backorders
 - Marketing program metadata: coupons, campaign IDs
 - Warehousing & inventory extension (WMS simulation layer)
+
+---
+
+### ✅ v0.1.0
+
+- First production-ready release
+- YAML-driven sales data generator with support for:
+  - orders, order_items, returns, customers, and products
+  - messiness injection (light/medium/heavy)
+  - embedded CLI and Pytest-driven QA suite
+  - config validation and baseline data audits
+- Tested with `SQL Stories` for simulated analytics workflows
 
 </details>
 
@@ -216,17 +236,17 @@ Use the YAML-based configuration system to control the size, structure, and mess
 <details>
 <summary><strong>🧰 YAML Template</strong></summary>
 
-- **File:** [`📝 ecom_sales_gen_template.yaml`](config/ecom_sales_gen_template.yaml)  
+- **File:** [`📝 ecom_sales_gen_template.yaml`](config/ecom_sales_gen_template.yaml)
 - **Purpose:** Defines how much data is generated, what kind of products are included, and the messiness level of the output.  
 - **Use case:** Start here for most use cases. Adjust row counts, return rates, vocab, etc.
 
 </details>
 
 <details>
-<summary><strong>📖 Config Guide</strong></summary>
+<summary><strong>📖 Full Config Guide</strong></summary>
 
-- **File:** [`📘 config_guide`](config_guide.md)  
-- **Purpose:** Explains each YAML field line-by-line  
+- **File:** [`📘 CONFIG_GUIDE.md`](./CONFIG_GUIDE.md)
+- **Purpose:** Explains how the YAML configuration works 
 - **Use case:** Perfect when you're creating your own custom scenario or tweaking advanced parameters
 
 </details>
@@ -264,6 +284,8 @@ ___
 
 This project includes a comprehensive testing framework to ensure the integrity and quality of the synthetic data. Running these tests is highly recommended, especially after making changes to the configuration or generating new datasets.
 
+For a detailed breakdown of each test suite, see the [**🧪 Testing and Validation Guide**](./TESTING_GUIDE.md).
+
 <details>
 <summary>🎯 Test Objectives</summary>
 
@@ -271,14 +293,14 @@ This project includes a comprehensive testing framework to ensure the integrity 
 - **Data Quality Rules:** Validate linkages (e.g., `order_id` in `returns` exists in `orders`), logic (e.g., refund ≤ order total), and schema expectations.
 - **Messiness Audits:** Assess the applied messiness level (e.g., null injection, typos, formatting issues).
 
-</details>  
+</details>
 
 <details>
 <summary>🛠️ Running the Tests</summary>
 
-✅ 1. Pytest Suite — `src/pytests/`
-
-These fast, targeted tests verify configuration structure and baseline data logic.
+The two primary ways to test the system are:
+1.  **Main QA Suite**: This runs automatically with the `ecomgen` command and validates the final data output.
+2.  **Pytest Suite**: This is for developers to test the core logic in isolation.
 
 - `test_config_integrity.py` – Confirms all required YAML fields exist
 - `test_config_linting.py` – Lints YAML for structure and syntax
@@ -308,3 +330,5 @@ This project is licensed under the [MIT License](LICENSE).</file>
 ## 🔗 Ready to Explore?
 
 Head to the [Config Guide](config_guide.md) to start generating your own custom e-commerce datasets — or visit the [SQL Stories Demo](https://github.com/G-Schumacher44/sql_stories) to see it used in real-world SQL challenges.
+
+🔝 [Back to Top](#top) 

@@ -23,6 +23,8 @@
 # These are the import paths to Python generator functions. Each maps
 # to a table name and should return a list of dictionaries or rows.
 row_generators:
+  shopping_carts: generators.generator_carts.generate_shopping_carts
+  cart_items: generators.generator_carts.generate_cart_items
   orders: generators.generator_orders.generate_orders
   order_items: generators.generator_orders.generate_order_items
   returns: generators.generator_returns.generate_returns
@@ -56,8 +58,30 @@ faker_seed: 42
  # You can define parent-child links (orders → order_items), add conditional logic
  # for data integrity, and simulate realistic retail scenarios.
 tables:
+  - name: shopping_carts
+    generate: 50000 # Increase traffic for a mid-sized retailer scenario.
+    columns:
+      - { name: cart_id, type: TEXT }
+      - { name: customer_id, type: TEXT }
+      - { name: created_at, type: DATE }
+      - { name: cart_total, type: REAL }
+      - { name: status, type: TEXT } # open, converted, abandoned
+
+  - name: cart_items
+    link_to_carts: true
+    item_count_range: [1, 8]
+    columns:
+      - { name: cart_item_id, type: INTEGER }
+      - { name: cart_id, type: TEXT }
+      - { name: product_id, type: INTEGER }
+      - { name: product_name, type: TEXT }
+      - { name: category, type: TEXT }
+      - { name: quantity, type: INTEGER }
+      - { name: unit_price, type: REAL }
+
   - name: orders
-    generate: 11945
+    # The 'generate' key is now ignored for orders. The number of orders is
+    # determined by the number of converted shopping carts.
     columns:
       - name: order_id
         type: TEXT
@@ -92,7 +116,7 @@ tables:
       - name: clv_bucket
         type: TEXT
 
-  - name: order_items
+  - name: order_items # Derived from cart_items of converted carts
     link_to_orders: true    # Dynamically generates N items per existing order
     item_count_range: [1, 10]     # NEW: Alnones between 1 and 10 items per order
     columns:
@@ -110,7 +134,8 @@ tables:
         type: REAL
 
   - name: returns
-    generate: 3458
+    # The 'generate' key is now ignored. The number of returns is determined
+    # by the number of orders and the configured return_rate.
     columns:
       - name: return_id
         type: TEXT
@@ -156,73 +181,6 @@ tables:
       - name: refunded_amount
         type: REAL
 
-  # --- Customers Table ---
-    # Customer profile and engagement data
-    # Comprehensive table capturing customer identities, demographics, and engagement.
-    # Includes demographic info, channel behavior, loyalty tiering, CLV segmentation,
-    # and logic-driven conditional fields (e.g., loyalty_enrollment_date required if loyalty_tier exists).
-    # Complex field relationships: CLV segmentation can be linked to loyalty, address requirements depend on signup channel,
-    # and loyalty tier logic infers enrollment date. Enables simulation of nuanced customer journeys and segmentation strategies.
-  - name: customers
-    generate: 3185
-    columns:
-      - name: customer_id
-        type: TEXT
-      - name: age
-        type: INTEGER
-      - name: gender
-        type: TEXT
-      - name: loyalty_tier
-        type: TEXT
-      - name: signup_date
-        type: TEXT
-      - name: customer_status
-        type: TEXT
-        options: ["Active", "Inactive", "Dormant"]
-        probabilities: [0.7, 0.2, 0.1]
-      - name: email
-        type: TEXT
-      - name: email_verified
-        type: BOOLEAN
-      - name: marketing_opt_in
-        type: BOOLEAN
-      # Required if customer has a loyalty tier (enrollment inferred from tier presence)
-      - name: loyalty_enrollment_date
-        type: DATE
-        required_if_loyalty_tier_present: true
-      # Used to infer address collection rules
-      - name: signup_channel
-        type: TEXT
-        options: ["Website", "Phone"]
-      # Required if signup occurred via website or phone
-      - name: mailing_address
-        type: TEXT
-        required_if_signup_channel_in: ["Website", "Phone"]
-      - name: billing_address
-        type: TEXT
-        required_if_signup_channel_in: ["Website", "Phone"]
-      # CLV segmentation, optionally linked to loyalty tier
-      - name: clv_bucket
-        type: TEXT
-        options: ["Low", "Medium", "High"]
-        linked_to_loyalty_tier: true
-      - name: is_guest
-        type: BOOLEAN
-
-  - name: product_catalog
-    generate: 1286
-    columns:
-      - name: product_id
-        type: INTEGER
-      - name: product_name
-        type: TEXT
-      - name: category
-        type: TEXT
-      - name: unit_price
-        type: REAL
-      - name: inventory_quantity
-        type: INTEGER
-
 # -------------------- LOOKUP TABLE CONFIG --------------------
 # Optional generators for controlled vocab tables like customers or products.
 # These are cached and reused across dependent tables.
@@ -231,11 +189,12 @@ lookup_config:
     num_products: 1286
     generator: generators.generator_catalog.generate_product_catalog
   customers:
-    num_customers: 3185
+    num_customers: 50000 # Increase the total customer base.
     min_age: 18
     max_age: 70
     gender_unknown_prob: 0.05
     guest_shopper_pct: 0.4
+    generator: generators.generator_customers.generate_customers
 
 
 # -------------------- VOCABULARY AND PARAMETERS SECTION --------------------
@@ -431,7 +390,19 @@ parameters:
   expedited_pct: 20
   gender_unknown_prob: 5
   order_days_back: 365
+  conversion_rate: 0.068 # Set to 6.8% for a slightly below-average conversion.
   return_max_lag_days: 30
+  # NEW: Settings to control repeat purchase behavior for cohort analysis
+  repeat_purchase_settings:
+    propensity_by_tier:
+      Platinum: 0.75 # 75% of Platinum customers will make another purchase
+      Gold: 0.60
+      Silver: 0.40
+      Bronze: 0.25
+      default: 0.15 # For customers with no tier
+    # Time delay in days between a purchase and the next visit
+    time_delay_days_range: [20, 150]
+  return_rate: 0.25 # NEW: Generate returns for 25% of all orders.
   # Distribution of orders by channel reflecting typical online retailer data
   order_channel_distribution: #
     Web: 0.60
