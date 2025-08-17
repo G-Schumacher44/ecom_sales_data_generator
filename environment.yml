@@ -1,4 +1,4 @@
-name: ecom_data_gen_env
+name: ecom_data_gen
 channels:
   - defaults
   - conda-forge
