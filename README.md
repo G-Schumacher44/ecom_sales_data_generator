@@ -245,7 +245,7 @@ Use the YAML-based configuration system to control the size, structure, and mess
 <details>
 <summary><strong>📖 Full Config Guide</strong></summary>
 
-- **File:** [`📘 config_guide.md`](CONFIG_GUIDE.md)
+- **File:** [`📘 CONFIG_GUIDE.md`](./CONFIG_GUIDE.md)
 - **Purpose:** Explains how the YAML configuration works 
 - **Use case:** Perfect when you're creating your own custom scenario or tweaking advanced parameters
 
@@ -284,7 +284,7 @@ ___
 
 This project includes a comprehensive testing framework to ensure the integrity and quality of the synthetic data. Running these tests is highly recommended, especially after making changes to the configuration or generating new datasets.
 
-> For a detailed breakdown of each test suite, see the **🧪 Testing and Validation Guide**.
+For a detailed breakdown of each test suite, see the [**🧪 Testing and Validation Guide**](./TESTING_GUIDE.md).
 
 <details>
 <summary>🎯 Test Objectives</summary>
