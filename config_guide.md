@@ -16,7 +16,7 @@
 
 This guide explains how to structure and modify the YAML configuration file [`📝 ecom_sales_gen_template.yaml`](config/ecom_sales_gen_template.yaml) to control the data generation process. Each section of the YAML allows you to fine-tune row counts, category distributions, vocabularies, and messiness parameters.
 
-> ⬅️ Back to Project README
+> ⬅️ [Back to Project README](README.md)
 
 ---
 
