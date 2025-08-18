@@ -25,7 +25,7 @@ def save_table_to_csv(rows, columns, csv_path):
     if isinstance(rows, pd.DataFrame):
         rows = rows.to_dict(orient='records')
     with open(csv_path, 'w', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=columns)
+        writer = csv.DictWriter(csvfile, fieldnames=columns, extrasaction='ignore')
         writer.writeheader()
         for row in rows:
             writer.writerow(row)
@@ -44,10 +44,66 @@ def generate_load_script(tables_config, output_path, output_dir):
             col_defs = [f"  {col['name']} {col['type']}" for col in columns]
             f.write(",\n".join(col_defs) + "\n")
             f.write(");\n\n")
-            f.write(f".mode csv\n")
-            f.write(f".import '{os.path.join(output_dir, f'{table_name}.csv')}' {table_name}\n\n")
+            f.write(f".import --csv --skip 1 '{os.path.join(output_dir, f'{table_name}.csv')}' {table_name}\n\n")
     print(f" Generated SQL load script at: {output_path}")
 
+def _calculate_and_apply_earned_status(lookup_cache, config, output_dir):
+    """
+    Post-processing step to calculate cumulative spend and assign "earned"
+    loyalty tiers and CLV buckets to customers and their orders.
+    """
+    print("📊 Calculating cumulative spend to assign earned tiers and CLV buckets...")
+    tier_thresholds = config.get_parameter("tier_spend_thresholds")
+    clv_thresholds = config.get_parameter("clv_spend_thresholds")
+
+    if not tier_thresholds and not clv_thresholds:
+        print("  Skipping earned status calculation: no spend thresholds found in config.")
+        return
+
+    orders_df = pd.DataFrame(lookup_cache.get("orders", []))
+    customers_df = pd.DataFrame(lookup_cache.get("customers", []))
+
+    if orders_df.empty or customers_df.empty:
+        print("  Skipping earned status calculation: orders or customers data not found.")
+        return
+
+    # Calculate cumulative spend per customer
+    customer_spend = orders_df.groupby('customer_id')['order_total'].sum().to_dict()
+
+    def get_earned_value(spend, thresholds):
+        # Sort thresholds by value descending to get the highest qualifying tier/bucket
+        for name, min_spend in sorted(thresholds.items(), key=lambda item: item[1], reverse=True):
+            if spend >= min_spend:
+                return name
+        return None
+
+    # Apply earned tiers and CLV buckets to the customers DataFrame
+    customers_df['cumulative_spend'] = customers_df['customer_id'].map(customer_spend).fillna(0)
+    if tier_thresholds:
+        customers_df['loyalty_tier'] = customers_df['cumulative_spend'].apply(lambda x: get_earned_value(x, tier_thresholds))
+    if clv_thresholds:
+        customers_df['clv_bucket'] = customers_df['cumulative_spend'].apply(lambda x: get_earned_value(x, clv_thresholds))
+
+    # Drop the temporary calculation column before saving
+    customers_df = customers_df.drop(columns=['cumulative_spend'])
+
+    # Update the master lookup_cache
+    lookup_cache['customers'] = customers_df.to_dict(orient='records')
+
+    # Update the orders DataFrame with the customer's final earned status using efficient .map()
+    if tier_thresholds:
+        customer_tier_map = customers_df.set_index('customer_id')['loyalty_tier'].to_dict()
+        # Use the map to update 'customer_tier'. For any customer_id not in the map,
+        # their original 'customer_tier' value is preserved by filling NaN with the original series.
+        orders_df['customer_tier'] = orders_df['customer_id'].map(customer_tier_map).fillna(orders_df['customer_tier'])
+
+    if clv_thresholds:
+        customer_clv_map = customers_df.set_index('customer_id')['clv_bucket'].to_dict()
+        # Same logic for clv_bucket
+        orders_df['clv_bucket'] = orders_df['customer_id'].map(customer_clv_map).fillna(orders_df['clv_bucket'])
+
+    lookup_cache['orders'] = orders_df.to_dict(orient='records')
+    print("✅ Applied earned status to customers and orders.")
 
 def main():
     """
@@ -254,13 +310,29 @@ def main():
 
             print("🛒 Carts and items generated. Processing conversions...")
             conversion_rate = config.get_parameter('conversion_rate', 0.03)
+            boosts = config.get_parameter('first_purchase_conversion_boost', {})
             carts = lookup_cache.get('shopping_carts', [])
+            customers_by_id = {c['customer_id']: c for c in lookup_cache.get('customers', [])}
+
             if carts:
                 converted_carts = []
-                for cart in carts:
-                    if random.random() < conversion_rate:
+                customers_with_orders = set()
+                # Sort carts by creation date to process in chronological order
+                for cart in sorted(carts, key=lambda x: x['created_at']):
+                    customer_id = cart['customer_id']
+                    
+                    # Determine the effective conversion rate for this cart
+                    effective_conversion_rate = conversion_rate
+                    if customer_id not in customers_with_orders:
+                        # This is a potential first purchase, check for a boost
+                        customer_signup_channel = customers_by_id.get(customer_id, {}).get('signup_channel')
+                        boost_multiplier = boosts.get(customer_signup_channel, 1.0)
+                        effective_conversion_rate *= boost_multiplier
+
+                    if random.random() < effective_conversion_rate:
                         cart['status'] = 'converted'
                         converted_carts.append(cart)
+                        customers_with_orders.add(customer_id)
                     else:
                         cart['status'] = 'abandoned'
                 lookup_cache['converted_carts'] = converted_carts
@@ -287,6 +359,25 @@ def main():
                     orders_csv_path = os.path.join(output_dir, "orders.csv")
                     save_table_to_csv(lookup_cache["orders"], orders_columns, orders_csv_path)
                     print(f"💾 Re-saved patched 'orders' table CSV ➜ {orders_csv_path}")
+
+    # --- Post-Processing: Calculate Earned Tiers/CLV ---
+    _calculate_and_apply_earned_status(lookup_cache, config, output_dir)
+
+    # Re-save customers and orders CSVs after applying earned status
+    if 'customers' in lookup_cache:
+        customers_table_config = config.get_table_config("customers")
+        if customers_table_config:
+            customers_columns = [col['name'] for col in customers_table_config.get('columns', [])]
+            customers_csv_path = os.path.join(output_dir, "customers.csv")
+            save_table_to_csv(lookup_cache["customers"], customers_columns, customers_csv_path)
+            print(f"💾 Re-saved 'customers' with earned tiers/CLV ➜ {customers_csv_path}")
+    if 'orders' in lookup_cache:
+        orders_table_config = config.get_table_config("orders")
+        if orders_table_config:
+            orders_columns = [col['name'] for col in orders_table_config.get('columns', [])]
+            orders_csv_path = os.path.join(output_dir, "orders.csv")
+            save_table_to_csv(lookup_cache["orders"], orders_columns, orders_csv_path)
+            print(f"💾 Re-saved 'orders' with earned tiers/CLV ➜ {orders_csv_path}")
 
     sql_script_path = os.path.join(output_dir, "load_data.sql")
     generate_load_script(tables, sql_script_path, output_dir)

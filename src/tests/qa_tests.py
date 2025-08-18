@@ -244,10 +244,10 @@ def validate_conversion_funnel(dataframes, messiness, config):
 
     logger.info("✅ Conversion funnel (carts to orders) is consistent.")
 
-def validate_repeat_purchase_propensity(dataframes, messiness, config):
+def validate_repeat_purchase_propensity(dataframes, messiness, config, tolerance=0.07):
     """
-    Checks if the actual repeat purchase rate per customer tier is within a
-    reasonable tolerance of the configured propensity.
+    Checks if the actual repeat purchase rate per customer segment (channel/tier)
+    is within a reasonable tolerance of the configured propensity.
     """
     if 'orders' not in dataframes or 'customers' not in dataframes:
         logger.warning("Skipping repeat purchase validation: orders or customers data not found.")
@@ -255,27 +255,43 @@ def validate_repeat_purchase_propensity(dataframes, messiness, config):
 
     orders_df = dataframes['orders']
     customers_df = dataframes['customers']
-
-    # Get relevant settings from config
     repeat_settings = config.get_parameter('repeat_purchase_settings', {})
-    propensity_by_tier = repeat_settings.get('propensity_by_tier', {})
+    propensity_config = repeat_settings.get('propensity_by_channel_and_tier', {})
     cart_conversion_rate = config.get_parameter('conversion_rate', 0.03)
 
-    if not propensity_by_tier:
+    if not propensity_config:
         logger.info("✅ Skipping repeat purchase validation: no propensity settings found in config.")
         return
 
-    # Calculate the number of orders per customer
     order_counts = orders_df.groupby('customer_id').size().reset_index(name='order_count')
-
-    # Merge with customer data to get loyalty tiers
-    merged_df = pd.merge(order_counts, customers_df[['customer_id', 'loyalty_tier']], on='customer_id', how='left')
+    merged_df = pd.merge(order_counts, customers_df[['customer_id', 'loyalty_tier', 'signup_channel']], on='customer_id', how='left')
     merged_df['loyalty_tier'] = merged_df['loyalty_tier'].fillna('default')
+    merged_df['signup_channel'] = merged_df['signup_channel'].fillna('default')
 
-    # For each tier, calculate and validate the actual repeat purchase rate
-    for tier, cart_propensity in propensity_by_tier.items():
-        tier_customers = merged_df[merged_df['loyalty_tier'] == tier]
-        if tier_customers.empty:
+    # Iterate through the nested configuration to validate each segment
+    for channel, tier_propensities in propensity_config.items():
+        if not isinstance(tier_propensities, dict): continue
+        for tier, avg_visits_propensity in tier_propensities.items():
+            segment_customers = merged_df[(merged_df['signup_channel'] == channel) & (merged_df['loyalty_tier'] == tier)]
+            if segment_customers.empty:
+                continue
+
+            # With the Poisson model for visits, the probability of at least one repeat purchase is 1 - e^(-lambda * p)
+            # where lambda is the visit propensity (avg visits) and p is the conversion rate.
+            expected_repeat_order_rate = 1 - np.exp(-avg_visits_propensity * cart_conversion_rate)
+
+            total_customers_in_segment = len(segment_customers)
+            repeat_customers_in_segment = len(segment_customers[segment_customers['order_count'] > 1])
+            actual_repeat_order_rate = repeat_customers_in_segment / total_customers_in_segment if total_customers_in_segment > 0 else 0
+
+            if not (expected_repeat_order_rate - tolerance <= actual_repeat_order_rate <= expected_repeat_order_rate + tolerance * 1.5): # Allow more upside variance
+                handle_issue(
+                    f"Repeat purchase rate for segment '{channel}/{tier}' ({actual_repeat_order_rate:.2%}) is outside the expected range of ~{expected_repeat_order_rate:.2%}.",
+                    messiness, level="warn"
+                )
+
+    logger.info("✅ Repeat purchase propensity validation passed.")
+
             continue
 
         # With the new Poisson model for visits, the probability of at least one repeat purchase is 1 - e^(-lambda * p)

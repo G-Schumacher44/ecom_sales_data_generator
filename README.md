@@ -7,7 +7,7 @@
 <p align="center">
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue">
   <img alt="Status" src="https://img.shields.io/badge/status-alpha-lightgrey">
-  <img alt="Version" src="https://img.shields.io/badge/version-v0.2.0-blueviolet">
+  <img alt="Version" src="https://img.shields.io/badge/version-v0.3.0-blueviolet">
 </p>
 
 ---
@@ -39,6 +39,9 @@ This generator goes beyond simple row creation by simulating a complete, interco
 - **Time-Aware Customer Behavior**: Simulates customer return visits over a one-year period. The likelihood of a repeat purchase is tied to `loyalty_tier`, and the time between visits is randomized, creating rich data for cohort analysis.
 - **Dynamic Returns**: The number of returns is not fixed but is generated as a percentage of total orders, ensuring that return volumes scale realistically with sales.
 - **Contextual Messiness**: The messiness engine can inject not just random noise but also contextual issues, like biased return reasons based on product category or seasonal sales spikes during holiday months.
+- **Channel-Specific Behavior**: Models distinct customer behavior based on their acquisition channel (`signup_channel`), influencing their purchase frequency, return rates, and even product category preferences.
+- **Earned Customer Value**: Customer `loyalty_tier` and `clv_bucket` are not pre-assigned but are calculated and "earned" based on their cumulative spending over time, creating a realistic progression of customer value.
+- **Long-Tail Churn & Reactivation**: The simulation now includes logic for long-term customer churn and a configurable probability for dormant customers to reactivate after a long period, adding valuable edge cases for analysis.
 
 <details>
 <summary> ⏯️ Quick Start</summary>
@@ -95,23 +98,29 @@ You can see this engine in action in [SQL Stories Demo](https://github.com/G-Sch
 <details>
 <summary><strong>🫆 Version Release Notes</strong></summary>
 
-### ✅ v0.2.0 (Current)
+### ✅ v0.3.0 (Current)
 
-- **Full Funnel Simulation**: Added `shopping_carts` and `cart_items` to model the complete customer journey from browsing session to purchase.
-- **Realistic Conversion Modeling**: Introduced a configurable `conversion_rate` to simulate cart abandonment (e.g., a low 3% rate for a struggling store vs. 8-10% for an average one) and a `repeat_purchase_settings` block to model customer lifecycle behavior.
-- **Enhanced for Cohort Analysis**: The generator now creates time-aware repeat purchase data based on customer loyalty tiers, enabling realistic retention and LTV analysis.
-- Expanded YAML configuration for fine-grained control over customer behavior.
+- **Advanced Behavioral Modeling**: Introduced highly stratified customer behavior based on `signup_channel` and `loyalty_tier`. This includes distinct repeat purchase rates, inter-order timing, return rates, and product category preferences.
+- **Earned Customer Status**: Implemented logic for customers to "earn" their `loyalty_tier` and `clv_bucket` based on their cumulative spend, creating a more realistic customer lifecycle.
+- **Long-Tail Churn & Reactivation**: Added simulation of long-term dormancy and customer reactivation, providing richer data for advanced cohort and LTV analysis.
+- **Enhanced Refund Realism**: Refund logic is now driven by the `reason` for the return, with configurable probabilities for full vs. partial refunds.
+- **Seasonal & Event-Driven Spikes**: Added `seasonal_factors` to simulate volume spikes for events like holiday sales, creating non-flat cohort shapes.
 
 ---
 
-### 🔮 v0.3.0 (Planned)
+### 🔮 v0.4.0 (Planned)
 
-- Simulated data spike events - e.g., *"holiday sales surge"*, *"flash sales"*, ect..ect.
 - B2B purchase logic: lines of credit, bulk buying behavior
 - Reseller segmentation: cohort rules, volume-based discounts
 - Shipping & fulfillment enrichment: lead times, delivery lag, backorders
 - Marketing program metadata: coupons, campaign IDs
 - Warehousing & inventory extension (WMS simulation layer)
+
+---
+### ✅ v0.2.0
+- **Full Funnel Simulation**: Added `shopping_carts` and `cart_items` to model the complete customer journey from browsing session to purchase.
+- **Realistic Conversion Modeling**: Introduced a configurable `conversion_rate` to simulate cart abandonment and a `repeat_purchase_settings` block to model customer lifecycle behavior.
+- **Enhanced for Cohort Analysis**: The generator now creates time-aware repeat purchase data based on customer loyalty tiers, enabling realistic retention and LTV analysis.
 
 ---
 
@@ -165,13 +174,13 @@ ecom_sales_data_generator/
 
 <summary> 📤 Output Files & SQL Loader Guide</summary> 
 
-#### `Expected Data Exports`
+#### Expected Data Exports
 
 After running the generator, you'll find in the `output/` folder:
 - `orders.csv`, `order_items.csv`, `returns.csv`, etc.
 - `load_data.sql` — ready-to-run script for loading into Postgres or SQLite
 
-#### `load_data.sql`
+#### `load_data.sql` (for SQLite)
 A YAML Schema defined Script that builds the database from your data
   - This script includes:
     - `CREATE TABLE` statements with inferred schema
@@ -180,11 +189,6 @@ A YAML Schema defined Script that builds the database from your data
     1. Open your SQL client (e.g., pgAdmin, DBeaver, terminal psql, SQLite CLI)
 	2.	Connect to your database (Postgres or SQLite recommended)
 	3.	Run the script:
-
-For Postgres (terminal):
-```bash
-psql -U your_user -d your_database -f output/load_data.sql
-```
 
 For SQLite:
 ```bash

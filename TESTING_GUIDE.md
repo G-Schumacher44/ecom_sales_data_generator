@@ -7,7 +7,7 @@
 <p align="center">
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue">
   <img alt="Status" src="https://img.shields.io/badge/status-alpha-lightgrey">
-  <img alt="Version" src="https://img.shields.io/badge/version-v0.2.0-blueviolet">
+  <img alt="Version" src="https://img.shields.io/badge/version-v0.3.0-blueviolet">
 </p>
 
 # 🧪 Testing and Validation Guide
@@ -54,6 +54,7 @@ This is the most important test suite for ensuring data quality. It is **execute
 - **`validate_repeat_purchase_propensity`**: Checks that the actual percentage of customers who make a second purchase aligns with the behavior defined in the `repeat_purchase_settings` in the YAML file.
 - **`validate_return_refunds`**: Ensures that the `refunded_amount` in the `returns` table header correctly matches the sum of the `refunded_amount` of its associated `return_items`.
 - **`validate_date_fields`**: Checks for invalid date formats and ensures logical consistency (e.g., a `return_date` cannot be before its `order_date`).
+- **`validate_repeat_purchase_propensity`**: A sophisticated check that verifies the actual repeat purchase rate for each customer segment (defined by `signup_channel` and `loyalty_tier`) is statistically close to the expected rate derived from the `propensity_by_channel_and_tier` configuration.
 
 ### Interpreting the Output
 

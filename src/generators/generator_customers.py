@@ -49,14 +49,24 @@ def generate_customers(num_customers=1000, faker=None, config=None, guest_shoppe
     # Use get_vocab and get_param for vocab/constants with fallbacks
     genders = get_vocab(config, 'genders', ['Male', 'Female', 'Unknown'])
     loyalty_tiers = get_vocab(config, 'loyalty_tiers', ['Bronze', 'Silver', 'Gold', 'Platinum'])
-    signup_channel_options = get_vocab(config, 'signup_channels', ['Website', 'Phone'])    
+    signup_channel_options = get_vocab(config, 'signup_channels', ['Website', 'Phone'])
+    # NEW: Get signup channel distribution from parameters to model acquisition funnel.
+    signup_channel_dist_config = get_param(config, 'signup_channel_distribution')
+
     clv_map = config.raw_config.get('clv_map', {
+        # NEW: Add default mapping for None tier
+        None: 'Low',
         'Bronze': 'Low',
         'Silver': 'Medium',
         'Gold': 'High',
         'Platinum': 'High'
     })
     gender_unknown_prob = customer_lookup_params.get('gender_unknown_prob', 0.05)
+
+    # NEW: Parameters for biased loyalty tier assignment
+    loyalty_dist_by_channel = get_param(config, 'loyalty_distribution_by_channel', {})
+    default_loyalty_dist = loyalty_dist_by_channel.get('default') # Let it be None if not set
+    no_tier_probability = get_param(config, 'no_tier_probability', 0.1)
 
     customer_status_options = get_vocab(config, 'customer_status_options', ["Active", "Inactive", "Dormant"])
     customer_status_probs = get_param(config, 'customer_status_probs', [0.7, 0.2, 0.1])
@@ -92,21 +102,37 @@ def generate_customers(num_customers=1000, faker=None, config=None, guest_shoppe
         # Basic fields
         customer_id_num = start_id + i
         signup_date_dt = safe_date_between(start_date=signup_start_date, end_date=global_end_date)
-        loyalty_tier = random.choice(loyalty_tiers + [None])  # Allow None loyalty tier sometimes
+
+        # NEW: Assign signup channel based on configured distribution.
+        if signup_channel_dist_config:
+            channels = list(signup_channel_dist_config.keys())
+            weights = list(signup_channel_dist_config.values())
+            signup_channel = random.choices(channels, weights=weights, k=1)[0]
+        else: # Fallback to uniform distribution if not configured.
+            signup_channel = random.choice(signup_channel_options)
+
+        # NEW: Assign loyalty tier based on channel-specific distribution
+        loyalty_tier = None
+        if random.random() > no_tier_probability:
+            # This customer will be assigned a tier
+            channel_dist = loyalty_dist_by_channel.get(signup_channel, default_loyalty_dist)
+            if channel_dist and len(channel_dist) == len(loyalty_tiers):
+                # Use the configured distribution
+                loyalty_tier = random.choices(loyalty_tiers, weights=channel_dist, k=1)[0]
+            else:
+                # Fallback to random choice if config is missing or invalid
+                loyalty_tier = random.choice(loyalty_tiers)
 
         # Conditional loyalty enrollment date
         if loyalty_tier:
             loyalty_enroll_date = safe_date_between(start_date=signup_date_dt, end_date=global_end_date).isoformat()
         else:
             loyalty_enroll_date = None
-
-        # Signup channel and conditional addresses
-        signup_channel = random.choice(signup_channel_options)        
         # Per governance, address is required. For baseline, billing matches mailing.
         mailing_address = generate_address(faker)
         billing_address = mailing_address
 
-        # CLV bucket based on loyalty tier
+        # CLV bucket based on loyalty tier (now handles None tier)
         clv_bucket = clv_map.get(loyalty_tier, None)
 
         customer = {

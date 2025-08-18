@@ -31,15 +31,16 @@ def generate_product_catalog(n=100, faker=None, config=None):
     min_inventory = product_lookup_params.get("min_inventory_quantity", 0)
     max_inventory = product_lookup_params.get("max_inventory_quantity", 1000)
 
+    # Use category_vocab for generating names, but vocab.categories for the actual category list
     category_vocab = get_vocab(config, "category_vocab", {})
+    categories = get_vocab(config, "categories", [])
 
     catalog = []
-    use_vocab = category_vocab is not None and bool(category_vocab)
-    categories = list(category_vocab.keys()) if category_vocab else []
     for i in range(1, n + 1):
-        if use_vocab and categories:
-            category = random.choice(categories)
-            vocab = category_vocab.get(category, {})
+        category = random.choice(categories) if categories else faker.word().capitalize()
+        
+        if category_vocab:
+            vocab = category_vocab.get(category.lower(), {}) # Use lowercase for name-gen lookup
             adjectives = vocab.get("adjectives", [])
             nouns = vocab.get("nouns", [])
             if adjectives and nouns:
@@ -47,11 +48,8 @@ def generate_product_catalog(n=100, faker=None, config=None):
                 noun = random.choice(nouns)
                 product_name = f"{adj} {noun}"
             else:
-                # Fallback if a category has no adjectives/nouns.
-                # Combine two words to create a more plausible, robust product name.
                 product_name = f"{faker.word().capitalize()} {faker.word()}"
         else:
-            category = faker.word().capitalize()
             product_name = f"{faker.word().capitalize()} {faker.word()}"
         product = {
             "product_id": i,
