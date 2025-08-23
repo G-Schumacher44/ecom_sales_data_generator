@@ -33,15 +33,68 @@ def save_table_to_csv(rows, columns, csv_path):
 
 def generate_load_script(tables_config, output_path, output_dir):
     """
-    Generate a SQLite-compatible SQL script to load CSV data.
+    Generate a SQLite-compatible SQL script to load CSV data, including
+    PRIMARY KEY and FOREIGN KEY constraints.
     """
+    # Define the schema relationships, mirroring the logic in qa_tests.py
+    pk_map = {
+        "product_catalog": "product_id",
+        "customers": "customer_id",
+        "shopping_carts": "cart_id",
+        "cart_items": "cart_item_id",
+        "orders": "order_id",
+        "order_items": ["order_id", "product_id"],
+        "returns": "return_id",
+        "return_items": "return_item_id",
+    }
+    fk_relationships = [
+        ("shopping_carts", "customers", "customer_id", "customer_id"),
+        ("cart_items", "shopping_carts", "cart_id", "cart_id"),
+        ("cart_items", "product_catalog", "product_id", "product_id"),
+        ("orders", "customers", "customer_id", "customer_id"),
+        ("order_items", "orders", "order_id", "order_id"),
+        ("order_items", "product_catalog", "product_id", "product_id"),
+        ("returns", "orders", "order_id", "order_id"),
+        ("returns", "customers", "customer_id", "customer_id"),
+        ("return_items", "returns", "return_id", "return_id"),
+        ("return_items", "orders", "order_id", "order_id"),
+        ("return_items", "product_catalog", "product_id", "product_id"),
+    ]
+
     with open(output_path, 'w') as f:
+        # Add PRAGMA to ensure FKs are enforced by default when the DB is created
+        f.write("PRAGMA foreign_keys = ON;\n\n")
+
         for table in tables_config:
             table_name = table.get('name')
             columns = table.get('columns', [])
+            pk_col = pk_map.get(table_name)
+
             f.write(f'DROP TABLE IF EXISTS {table_name};\n')
             f.write(f'CREATE TABLE {table_name} (\n')
-            col_defs = [f"  {col['name']} {col['type']}" for col in columns]
+            
+            col_defs = []
+            for col in columns:
+                col_name = col['name']
+                col_type = col['type']
+                col_def = f"  {col_name} {col_type}"
+                # Handle single-column PKs inline for SQLite's `INTEGER PRIMARY KEY` optimization
+                if isinstance(pk_col, str) and col_name == pk_col:
+                    col_def += " PRIMARY KEY"
+                col_defs.append(col_def)
+
+            # Add foreign key constraints for the current table
+            table_fks = [fk for fk in fk_relationships if fk[0] == table_name]
+            for _, parent_table, child_key, parent_key in table_fks:
+                fk_def = f"  FOREIGN KEY({child_key}) REFERENCES {parent_table}({parent_key})"
+                col_defs.append(fk_def)
+
+            # Add composite primary key constraint at the table level
+            if isinstance(pk_col, list):
+                pk_cols_str = ", ".join(pk_col)
+                pk_def = f"  PRIMARY KEY ({pk_cols_str})"
+                col_defs.append(pk_def)
+
             f.write(",\n".join(col_defs) + "\n")
             f.write(");\n\n")
             f.write(f".import --csv --skip 1 '{os.path.join(output_dir, f'{table_name}.csv')}' {table_name}\n\n")
@@ -260,8 +313,28 @@ def main():
                 rows = row_generators[table_name](columns, num_rows, faker_instance, lookup_cache)
             elif table_name == 'order_items':
                 # The generate_orders function now has a simpler signature
-                order_items, order_updates = row_generators[table_name](columns, None, faker_instance, lookup_cache, config)
-                rows = order_items
+                raw_order_items, order_updates = row_generators[table_name](columns, None, faker_instance, lookup_cache, config)
+
+                # The generator can create duplicate (order_id, product_id) rows, violating the PK.
+                # We must aggregate these duplicates before saving.
+                if raw_order_items:
+                    order_items_df = pd.DataFrame(raw_order_items)
+                    
+                    # Define aggregation logic: sum quantities, keep first for others.
+                    agg_funcs = {col: 'first' for col in order_items_df.columns if col not in ['order_id', 'product_id', 'quantity']}
+                    agg_funcs['quantity'] = 'sum'
+                    
+                    # Ensure product_id is a consistent type for grouping
+                    order_items_df['product_id'] = pd.to_numeric(order_items_df['product_id'], errors='coerce')
+
+                    deduped_df = order_items_df.groupby(['order_id', 'product_id'], as_index=False).agg(agg_funcs)
+                    
+                    # Preserve original column order
+                    original_columns = [col['name'] for col in columns]
+                    rows = deduped_df[original_columns].to_dict(orient='records')
+                else:
+                    rows = raw_order_items
+
                 # Apply updates to the cached orders
                 for order in lookup_cache.get('orders', []):
                     if order['order_id'] in order_updates:
