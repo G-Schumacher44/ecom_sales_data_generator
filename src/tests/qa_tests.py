@@ -85,7 +85,7 @@ def validate_numeric_fields(dataframes, messiness):
     logger.info("✅ Numeric fields in order_items and return_items are valid and sane.")
 
 def validate_primary_keys(dataframes, messiness):
-    """Checks for uniqueness in all primary key columns."""
+    """Checks for uniqueness in all single-column and composite primary keys."""
     pk_map = {
         "product_catalog": "product_id",
         "customers": "customer_id",
@@ -95,6 +95,9 @@ def validate_primary_keys(dataframes, messiness):
         "returns": "return_id",
         "return_items": "return_item_id",
     }
+    composite_pk_map = {
+        "order_items": ["order_id", "product_id"]
+    }
 
     for table, pk_col in pk_map.items():
         if table in dataframes:
@@ -102,6 +105,13 @@ def validate_primary_keys(dataframes, messiness):
             if df[pk_col].dropna().duplicated().any():
                 duplicates = df[df[pk_col].duplicated()][pk_col].tolist()
                 handle_issue(f"Duplicate primary key values found in '{table}.{pk_col}': {duplicates[:5]}", messiness)
+
+    for table, pk_cols in composite_pk_map.items():
+        if table in dataframes:
+            df = dataframes[table]
+            if df.duplicated(subset=pk_cols).any():
+                duplicate_rows = df[df.duplicated(subset=pk_cols, keep=False)].head(5)
+                handle_issue(f"Duplicate composite primary key values found in '{table}' for columns {pk_cols}. Sample duplicates:\n{duplicate_rows}", messiness)
 
     logger.info("✅ All primary key uniqueness checks passed.")
 
@@ -247,7 +257,7 @@ def validate_all_referential_integrity(dataframes, messiness):
         if child_table in dataframes and parent_table in dataframes:
             validate_foreign_key(dataframes[child_table], dataframes[parent_table], child_key, parent_key, messiness)
     logger.info("✅ All referential integrity (FK) checks passed.")
-def test_agent_assignments(config, dataframes, messiness):
+def validate_agent_assignments(config, dataframes, messiness):
     agent_pool = getattr(config, 'vocab', {}).get('agent_pool', {})
     agents = agent_pool.get('agents', [])
     config_agents = set(agent['id'] for agent in agents)
@@ -488,7 +498,7 @@ def run_all_tests(data_dir: str, messiness: str, run_big_audit: bool = False, de
     validate_cart_totals(dataframes, messiness)
     validate_cart_timestamps(dataframes, messiness)
     validate_date_fields(dataframes, messiness)
-    test_agent_assignments(config, dataframes, messiness)
+    validate_agent_assignments(config, dataframes, messiness)
     validate_conversion_funnel(dataframes, messiness, config)
     validate_repeat_purchase_propensity(dataframes, messiness, config, debug=debug)
 

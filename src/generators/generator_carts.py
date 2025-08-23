@@ -96,8 +96,8 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
         last_cart_date = info['last_date']
         initial_cart_date_anchor = info['last_date'] # Use this for independent event calculations
         
-        # Use `or 'default'` to safely handle cases where a key's value is None,
-        # which `get()` with a default parameter does not handle.
+        # Use `or 'default'` to safely handle cases where a key's value might be None,
+        # which dict.get() with a default parameter does not handle.
         tier = customer.get('initial_loyalty_tier') or 'default'
         signup_channel = customer.get('signup_channel') or 'default'
         signup_date_str = customer.get('signup_date')
@@ -267,17 +267,17 @@ def generate_cart_items(columns: List[str], num_rows: int, faker_instance: Faker
         # This is a critical piece of information for ensuring data consistency.
         raise ValueError("global_end_date not found in lookup_cache. It should be set in the main run script.")
 
-    # NEW: Create a customer tier lookup for quick access
+    # Create a customer tier lookup for quick access to apply behavioral rules.
     customers_by_id = {c['customer_id']: c for c in lookup_cache.get('customers', [])}
 
-    # NEW: Get category preference settings
+    # Get category preference settings to influence product choices.
     category_prefs_by_channel = config.get_parameter('category_preference_by_signup_channel', {})
     all_categories = get_vocab(config, 'categories', [])
     if not all_categories:
         # Fallback if vocab is missing, though this should be caught by a linter.
         all_categories = list(get_vocab(config, 'category_vocab', {}).keys())
 
-    # NEW: Get tier-based cart behavior settings to stratify spending
+    # Get tier-based cart behavior settings to stratify cart size and item quantities.
     cart_behavior_by_tier = config.get_parameter('cart_behavior_by_tier', {})
     default_item_count_range = config.get_table_config("cart_items").get("item_count_range", [1, 8])
     default_quantity_range = [1, 3] # A sensible default
@@ -294,7 +294,7 @@ def generate_cart_items(columns: List[str], num_rows: int, faker_instance: Faker
         # Get created_at as a datetime object for direct use and comparison
         created_at_dt = datetime.fromisoformat(cart["created_at"])
 
-        # NEW: Determine cart size and item quantity based on tier
+        # Determine cart size and item quantity based on the customer's tier.
         tier_behavior = cart_behavior_by_tier.get(tier, {})
         item_count_range = tier_behavior.get('item_count_range', default_item_count_range)
         quantity_range = tier_behavior.get('quantity_range', default_quantity_range)

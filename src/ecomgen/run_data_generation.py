@@ -100,6 +100,17 @@ def generate_load_script(tables_config, output_path, output_dir):
             f.write(f".import --csv --skip 1 '{os.path.join(output_dir, f'{table_name}.csv')}' {table_name}\n\n")
     print(f" Generated SQL load script at: {output_path}")
 
+def resave_patched_table(table_name, lookup_cache, config, output_dir):
+    """Helper to re-save a table's CSV after its data has been updated in the lookup_cache."""
+    if table_name in lookup_cache:
+        table_config = config.get_table_config(table_name)
+        if table_config and lookup_cache[table_name]:
+            columns = [col['name'] for col in table_config.get('columns', [])]
+            csv_path = os.path.join(output_dir, f"{table_name}.csv")
+            save_table_to_csv(lookup_cache[table_name], columns, csv_path)
+            print(f"💾 Re-saved patched '{table_name}' table CSV ➜ {csv_path}")
+
+
 def _calculate_and_apply_earned_status(lookup_cache, config, output_dir):
     """
     Post-processing step to calculate cumulative spend and assign "earned"
@@ -179,7 +190,7 @@ def main():
     from pathlib import Path
     config = Config(yaml_path=Path(args.config) if args.config else None)
 
-    # Use config values from config instance    
+    # Use config values from config instance
     category_vocab = config.category_vocab
     output_dir = args.output_dir or config.raw_config.get('output_dir', 'output')
     messiness_level = args.messiness_level
@@ -369,29 +380,20 @@ def main():
         else:
             print(f"Warning: No rows generated for table '{table_name}', skipping CSV save.")
 
-        # (Removed guest customer extraction and merging after orders generation)
-
         if table_name == "cart_items":
             # Re-save the shopping_carts table which has been updated with totals
-            if "shopping_carts" in lookup_cache:
-                carts_table_config = config.get_table_config("shopping_carts")
-                if carts_table_config and lookup_cache["shopping_carts"]:
-                    carts_columns = [col['name'] for col in carts_table_config.get('columns', [])]
-                    carts_csv_path = os.path.join(output_dir, "shopping_carts.csv")
-                    save_table_to_csv(lookup_cache["shopping_carts"], carts_columns, carts_csv_path)
-                    print(f"💾 Re-saved patched 'shopping_carts' table CSV ➜ {carts_csv_path}")
+            resave_patched_table("shopping_carts", lookup_cache, config, output_dir)
 
             print("🛒 Carts and items generated. Processing conversions...")
             conversion_rate = config.get_parameter('conversion_rate', 0.03)
             boosts = config.get_parameter('first_purchase_conversion_boost', {})
             emptied_prob = config.get_parameter('abandoned_cart_emptied_prob', 0.15)
             carts = lookup_cache.get('shopping_carts', [])
-            customers_by_id = {c['customer_id']: c for c in lookup_cache.get('customers', [])}
 
             if carts:
+                customers_by_id = {c['customer_id']: c for c in lookup_cache.get('customers', [])}
                 converted_carts = []
                 customers_with_orders = set()
-                # Sort carts by creation date to process in chronological order
                 abandoned_carts_to_process = []
                 for cart in sorted(carts, key=lambda x: x['created_at']):
                     customer_id = cart['customer_id']
@@ -434,53 +436,22 @@ def main():
                 total_carts = len(carts)
                 actual_conversion_rate = len(converted_carts) / total_carts if total_carts > 0 else 0
                 print(f"  {len(converted_carts)} of {total_carts} carts converted into orders (Target: {conversion_rate:.2%}, Actual: {actual_conversion_rate:.2%}).")
-                save_table_to_csv(lookup_cache["shopping_carts"], carts_columns, carts_csv_path)
-                print(f"💾 Re-saved 'shopping_carts' with conversion status ➜ {carts_csv_path}")
+                resave_patched_table("shopping_carts", lookup_cache, config, output_dir)
                 # Re-save cart_items after some may have been emptied
-                if 'cart_items' in lookup_cache:
-                    cart_items_table_config = config.get_table_config("cart_items")
-                    if cart_items_table_config:
-                        cart_items_columns = [col['name'] for col in cart_items_table_config.get('columns', [])]
-                        cart_items_csv_path = os.path.join(output_dir, "cart_items.csv")
-                        save_table_to_csv(lookup_cache["cart_items"], cart_items_columns, cart_items_csv_path)
-                        print(f"💾 Re-saved 'cart_items' after emptying abandoned carts ➜ {cart_items_csv_path}")
+                resave_patched_table("cart_items", lookup_cache, config, output_dir)
 
         if table_name == "return_items":
-            if "returns" in lookup_cache:
-                returns_table_config = next((t for t in tables if t.get('name') == "returns"), None)
-                if returns_table_config and lookup_cache["returns"]:
-                    returns_columns = [col['name'] for col in returns_table_config.get('columns', [])]
-                    returns_csv_path = os.path.join(output_dir, "returns.csv")
-                    save_table_to_csv(lookup_cache["returns"], returns_columns, returns_csv_path)
-                    print(f"💾 Re-saved patched 'returns' table CSV ➜ {returns_csv_path}")
+            resave_patched_table("returns", lookup_cache, config, output_dir)
 
         if table_name == "order_items":
-            if "orders" in lookup_cache:
-                orders_table_config = next((t for t in tables if t.get('name') == "orders"), None)
-                if orders_table_config and lookup_cache["orders"]:
-                    orders_columns = [col['name'] for col in orders_table_config.get('columns', [])]
-                    orders_csv_path = os.path.join(output_dir, "orders.csv")
-                    save_table_to_csv(lookup_cache["orders"], orders_columns, orders_csv_path)
-                    print(f"💾 Re-saved patched 'orders' table CSV ➜ {orders_csv_path}")
+            resave_patched_table("orders", lookup_cache, config, output_dir)
 
     # --- Post-Processing: Calculate Earned Tiers/CLV ---
     _calculate_and_apply_earned_status(lookup_cache, config, output_dir)
 
     # Re-save customers and orders CSVs after applying earned status
-    if 'customers' in lookup_cache:
-        customers_table_config = config.get_table_config("customers")
-        if customers_table_config:
-            customers_columns = [col['name'] for col in customers_table_config.get('columns', [])]
-            customers_csv_path = os.path.join(output_dir, "customers.csv")
-            save_table_to_csv(lookup_cache["customers"], customers_columns, customers_csv_path)
-            print(f"💾 Re-saved 'customers' with earned tiers/CLV ➜ {customers_csv_path}")
-    if 'orders' in lookup_cache:
-        orders_table_config = config.get_table_config("orders")
-        if orders_table_config:
-            orders_columns = [col['name'] for col in orders_table_config.get('columns', [])]
-            orders_csv_path = os.path.join(output_dir, "orders.csv")
-            save_table_to_csv(lookup_cache["orders"], orders_columns, orders_csv_path)
-            print(f"💾 Re-saved 'orders' with earned tiers/CLV ➜ {orders_csv_path}")
+    resave_patched_table("customers", lookup_cache, config, output_dir)
+    resave_patched_table("orders", lookup_cache, config, output_dir)
 
     sql_script_path = os.path.join(output_dir, "load_data.sql")
     generate_load_script(tables, sql_script_path, output_dir)

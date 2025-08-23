@@ -55,11 +55,10 @@ This project provides everything needed to simulate a realistic online retailer�
 - **Modular Generators**: Custom row generation logic for each core table (`orders`, `order_items`, `returns`, etc.)
 - **YAML Config System**: Fine-grained control over generation volume, vocab, lookup tables, faker seed, and injection toggles
 - **Messiness Engine**: Add typos, duplicates, nulls, formatting bugs, and numeric corruption
-- **QA Framework**: Hard-fail QA scripts and Pytest modules to catch data issues automatically
+- **QA Framework**: Includes an automated Python suite (`qa_tests.py`) for validating data logic and a manual SQL script (`scripts/db_integrity_check.sql`) for direct database schema and integrity auditing.
 - **CLI Interface**: One-command generation + validation from terminal or VS Code tasks
 - **Editable Dev Mode**: Install via `pip install -e .` for active development and local CLI usage
 
----
 
 ### 🧭 Orientation & Getting Started
 
@@ -102,34 +101,15 @@ This generator goes beyond simple row creation by simulating a complete, interco
 <details>
 <summary><strong>🫆 Version Release Notes</strong></summary>
 
-<summary><strong>🫆 Version Release Notes</strong></summary>
-
 ### ✅ v0.3.0 (Current)
 
 - **Enriched Cart & Session Analysis**: Added detailed timestamps (`created_at`, `updated_at`, `added_at`) to all cart events and distinguished between `abandoned` and `emptied` carts, enabling granular analysis of shopper sessions and user intent.
 - **Advanced Behavioral Modeling**: Introduced highly stratified customer behavior based on `signup_channel` and `loyalty_tier`. This includes distinct repeat purchase rates, inter-order timing, return rates, and product category preferences.
 - **Earned Customer Status**: Implemented logic for customers to "earn" their `loyalty_tier` and `clv_bucket` based on their cumulative spend, creating a more realistic customer lifecycle.
 - **Long-Tail Churn & Reactivation**: Added simulation of long-term dormancy and customer reactivation, providing richer data for advanced cohort and LTV analysis.
-
-
-
----
-
-### 🔮 v0.4.0 (Planned)
-
-- B2B purchase logic: lines of credit, bulk buying behavior
-- Reseller segmentation: cohort rules, volume-based discounts
-- Shipping & fulfillment enrichment: lead times, delivery lag, backorders
-- Marketing program metadata: coupons, campaign IDs
-- Warehousing & inventory extension (WMS simulation layer)
-___
-### ✅ v0.2.5 (Pre-Release)
-
-- **Advanced Behavioral Modeling**: Introduced highly stratified customer behavior based on `signup_channel` and `loyalty_tier`. This includes distinct repeat purchase rates, inter-order timing, return rates, and product category preferences.
-- **Earned Customer Status**: Implemented logic for customers to "earn" their `loyalty_tier` and `clv_bucket` based on their cumulative spend, creating a more realistic customer lifecycle.
-- **Long-Tail Churn & Reactivation**: Added simulation of long-term dormancy and customer reactivation, providing richer data for advanced cohort and LTV analysis.
 - **Enhanced Refund Realism**: Refund logic is now driven by the `reason` for the return, with configurable probabilities for full vs. partial refunds.
 - **Seasonal & Event-Driven Spikes**: Added `seasonal_factors` to simulate volume spikes for events like holiday sales, creating non-flat cohort shapes.
+- **Improved Schema & Data Integrity**: Added composite primary keys and foreign key constraints to the auto-generated `load_data.sql` script. Fixed data generation logic to prevent duplicate line items, ensuring all database constraints are met.
 ---
 ### ✅ v0.2.0
 - **Full Funnel Simulation**: Added `shopping_carts` and `cart_items` to model the complete customer journey from browsing session to purchase.
@@ -150,6 +130,15 @@ ___
 
 </details>
 
+<details>
+<summary><strong>🔮 v0.4.0 (Planned)</strong></summary>
+
+- B2B purchase logic: lines of credit, bulk buying behavior
+- Reseller segmentation: cohort rules, volume-based discounts
+- Shipping & fulfillment enrichment: lead times, delivery lag, backorders
+- Marketing program metadata: coupons, campaign IDs
+- Warehousing & inventory extension (WMS simulation layer)
+</details>
 </details> 
 
 <details>

@@ -27,8 +27,9 @@ FROM sqlite_master
 WHERE type='table' AND name NOT LIKE 'sqlite_%'
 ORDER BY name;
 
--- VSCode SQLite extension does not support dynamic SQL via sqlite_master iteration.
--- Use explicit counts for known tables in this dataset.
+-- NOTE: The following queries use explicit `UNION ALL` clauses for each table.
+-- This is necessary because SQLite's `PRAGMA` statements and `sqlite_master` table
+-- do not support dynamic iteration within a single query execution.
 SELECT 'cart_items'        AS table_name, COUNT(*) AS rows FROM cart_items
 UNION ALL SELECT 'customers',        COUNT(*) FROM customers
 UNION ALL SELECT 'order_items',      COUNT(*) FROM order_items
