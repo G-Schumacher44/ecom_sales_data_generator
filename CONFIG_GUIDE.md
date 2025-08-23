@@ -55,6 +55,8 @@ The `parameters` section is where you control the most important aspects of the 
 
 ### Sales Funnel & Conversion
 
+`order_days_back`: Defines the total duration of the simulation in days (e.g., 365 for one year). All generated events, from signups to orders and returns, will occur within this time window, ending on the current date.
+
 `conversion_rate`: The baseline probability that a `shopping_cart` will be successfully converted into an `order`.
 
 `first_purchase_conversion_boost`: A multiplier that increases the conversion rate for a customer's *first* potential purchase, based on their `signup_channel`. This simulates more effective onboarding for certain channels (e.g., `Phone`).
@@ -76,6 +78,12 @@ This is controlled by the `repeat_purchase_settings` block, which now supports h
 - **`probability`**: The chance that a customer who has gone dormant will eventually return to make another purchase.
 - **`delay_days_range`**: The long period of inactivity (e.g., 200-400 days) before a potential reactivation.
 
+### Event-Driven & Seasonal Behavior
+
+`retention_shocks`: Simulates external events that affect customer loyalty. You can define a multiplier for repeat visit propensity for customers who signed up in a specific month (`YYYY-MM`). A value `< 1.0` models increased churn, while `> 1.0` models re-engagement.
+
+`seasonal_factors`: Simulates volume spikes for events like holiday sales. The value is a multiplier for cart volume in a given month, creating non-flat cohort shapes and more realistic sales patterns.
+
 ### Earned Customer Value
 
 A key feature of v0.3.0 is that customer value is no longer pre-assigned; it's **earned**.
@@ -88,15 +96,23 @@ The simulation follows a two-step process:
 
 ### Returns & Refunds
 
+`return_rate`: The global probability that any given order will have at least one return event. This serves as a fallback if no channel-specific rate is defined.
+
 `return_rate_by_signup_channel`: Sets the baseline probability of a return based on the customer's acquisition channel. This allows you to model higher return rates for impulse-buy channels like "Social Media".
 
 `refund_behavior_by_reason`: This mapping makes refund amounts more realistic. Based on the `reason` for a return (e.g., "Defective" vs. "Changed mind"), you can control the probability of a full refund (`full_return_prob`) vs. a partial refund of a line item (`partial_quantity_prob`).
 
 `return_timing_distribution`: Creates a realistic long tail for returns. You can specify what percentage of returns occur within 30, 90, or 365 days.
 
+`multi_return_probability`: The probability that an order that already has one return will have a second, separate return event, simulating more complex customer service scenarios.
+
 ### Order & Channel Behavior
 
 `order_channel_distribution`: A weighted distribution for the channel of any given order.
+
+`signup_channel_distribution`: A weighted distribution that controls how new customers are acquired (e.g., 55% from "Website", 15% from "Social Media"). This is foundational for modeling acquisition funnels.
+
+`loyalty_distribution_by_channel`: Defines the probability of a new customer being assigned to an initial loyalty tier (`Bronze`, `Silver`, etc.) based on their `signup_channel`. This allows you to model scenarios where certain channels attract higher-value customers from the start.
 
 `category_preference_by_signup_channel`: Skews the product categories a customer is likely to purchase from based on their `signup_channel`. For example, you can make "Social Media" customers more likely to buy "electronics" and "toys".
 
