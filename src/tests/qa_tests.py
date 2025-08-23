@@ -140,6 +140,65 @@ def validate_return_refunds(dataframes, messiness, tolerance=0.01):
 
     logger.info("✅ All returns.refunded_amount values match the sum of their return_items.refunded_amount.")
 
+def validate_cart_totals(dataframes, messiness, tolerance=0.01):
+    """Validates that shopping_cart totals match the sum of their items."""
+    if 'shopping_carts' not in dataframes or 'cart_items' not in dataframes:
+        return
+    carts_df = dataframes['shopping_carts']
+    cart_items_df = dataframes['cart_items']
+
+    # Calculate sum of item totals per cart from cart_items
+    cart_items_df['item_total'] = pd.to_numeric(cart_items_df['quantity'], errors='coerce') * pd.to_numeric(cart_items_df['unit_price'], errors='coerce')
+    item_totals_sum = cart_items_df.groupby('cart_id')['item_total'].sum().reset_index()
+    item_totals_sum.rename(columns={'item_total': 'items_total_sum'}, inplace=True)
+
+    # Merge with the main carts table and fill missing sums with 0
+    merged_df = pd.merge(carts_df, item_totals_sum, on='cart_id', how='left').fillna(0)
+
+    # Make status check case-insensitive to handle messiness
+    merged_df['status_lower'] = merged_df['status'].str.strip().str.lower()
+
+    # --- Validation Logic ---
+    # 1. For 'emptied' carts, total must be 0 and there should be no items.
+    emptied_carts = merged_df[merged_df['status_lower'] == 'emptied']
+    if not emptied_carts.empty:
+        if (emptied_carts['cart_total'] != 0).any():
+            handle_issue("Found 'emptied' carts with a non-zero cart_total.", messiness, level="warn")
+        if (emptied_carts['items_total_sum'] != 0).any():
+            handle_issue("Found cart_items associated with 'emptied' carts.", messiness, level="warn")
+
+    # 2. For all other carts, the total must match the sum of items.
+    other_carts = merged_df[merged_df['status_lower'] != 'emptied']
+    mismatches = other_carts[abs(other_carts['cart_total'] - other_carts['items_total_sum']) > tolerance]
+
+    if not mismatches.empty:
+        for _, row in mismatches.iterrows():
+            handle_issue(f"Cart total mismatch for cart_id {row['cart_id']}: header={row['cart_total']}, items_sum={row['items_total_sum']}", messiness, level="warn")
+
+    logger.info("✅ All shopping_carts.cart_total values are consistent with their status and items.")
+
+def validate_cart_timestamps(dataframes, messiness):
+    """Validates logical consistency of cart-related timestamps."""
+    if 'shopping_carts' not in dataframes or 'cart_items' not in dataframes:
+        return
+    carts_df = dataframes['shopping_carts']
+    cart_items_df = dataframes['cart_items']
+
+    # Convert to datetime, coercing errors to NaT
+    carts_df['created_at_dt'] = pd.to_datetime(carts_df['created_at'], errors='coerce')
+    carts_df['updated_at_dt'] = pd.to_datetime(carts_df['updated_at'], errors='coerce')
+    cart_items_df['added_at_dt'] = pd.to_datetime(cart_items_df['added_at'], errors='coerce')
+
+    # Merge to check relationships
+    merged_df = pd.merge(cart_items_df, carts_df[['cart_id', 'created_at_dt', 'updated_at_dt']], on='cart_id', how='left')
+
+    if (merged_df['added_at_dt'] < merged_df['created_at_dt']).any():
+        handle_issue("Found cart_items with an 'added_at' before the cart's 'created_at'.", messiness, level="warn")
+    if (carts_df['updated_at_dt'] < carts_df['created_at_dt']).any():
+        handle_issue("Found shopping_carts with an 'updated_at' before its 'created_at'.", messiness, level="warn")
+
+    logger.info("✅ All cart-related timestamps are logically consistent.")
+
 def validate_date_fields(dataframes, messiness):
     """Validates date formats and logical consistency (return_date >= order_date)."""
     if 'orders' in dataframes and pd.to_datetime(dataframes['orders']['order_date'], errors='coerce').isnull().any():
@@ -224,7 +283,8 @@ def validate_conversion_funnel(dataframes, messiness, config):
         carts_df = dataframes["shopping_carts"]
 
         num_orders = len(orders_df)
-        converted_carts = carts_df[carts_df["status"] == "converted"]
+        # Make status check case-insensitive to handle messiness from inject_mess.py
+        converted_carts = carts_df[carts_df["status"].str.strip().str.lower() == "converted"]
         num_converted_carts = len(converted_carts)
 
         if num_orders != num_converted_carts:
@@ -321,11 +381,15 @@ def run_all_tests(data_dir: str, messiness: str, run_big_audit: bool = False):
     dataframes = load_data(data_dir)
 
     # Run baseline QA tests
+    logger.info("--- Starting Primary Key / Foreign Key Audit ---")
     validate_primary_keys(dataframes, messiness)
     validate_all_referential_integrity(dataframes, messiness)
+    logger.info("--- PK/FK Audit Complete ---")
     validate_numeric_fields(dataframes, messiness)
     validate_catalog_schema(dataframes, messiness)
     validate_return_refunds(dataframes, messiness)
+    validate_cart_totals(dataframes, messiness)
+    validate_cart_timestamps(dataframes, messiness)
     validate_date_fields(dataframes, messiness)
     test_agent_assignments(config, dataframes, messiness)
     validate_conversion_funnel(dataframes, messiness, config)

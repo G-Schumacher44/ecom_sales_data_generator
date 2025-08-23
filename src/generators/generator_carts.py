@@ -72,10 +72,13 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
         
         if not initial_cart_date: continue # Should not happen with safe_date_between
 
+        random_time = faker_instance.time_object()
+        initial_cart_datetime = datetime.combine(initial_cart_date, random_time)
         carts.append({
             "cart_id": generate_cart_id(faker_instance),
             "customer_id": customer['customer_id'],
-            "created_at": initial_cart_date.isoformat(),
+            "created_at": initial_cart_datetime.isoformat(),
+            "updated_at": initial_cart_datetime.isoformat(), # Initially same as created_at
             "status": "open",
             "cart_total": 0.0
         })
@@ -83,7 +86,7 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
         # Store the latest cart date for this customer
         cust_id = customer['customer_id']
         if cust_id not in customer_last_cart_info or initial_cart_date > customer_last_cart_info[cust_id]['last_date']:
-             customer_last_cart_info[cust_id] = {'customer_data': customer, 'last_date': initial_cart_date}
+             customer_last_cart_info[cust_id] = {'customer_data': customer, 'last_date': initial_cart_datetime.date()}
 
     # --- 2. Simulate Repeat Visits for Customers with Initial Carts ---
     for customer_id, info in customer_last_cart_info.items():
@@ -126,14 +129,17 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
             if next_cart_date > global_end_date:
                 continue
 
+            random_time = faker_instance.time_object()
+            next_cart_datetime = datetime.combine(next_cart_date, random_time)
             carts.append({
                 "cart_id": generate_cart_id(faker_instance),
                 "customer_id": customer['customer_id'],
-                "created_at": next_cart_date.isoformat(),
+                "created_at": next_cart_datetime.isoformat(),
+                "updated_at": next_cart_datetime.isoformat(),
                 "status": "open",
                 "cart_total": 0.0
             })
-            last_cart_date = next_cart_date
+            last_cart_date = next_cart_datetime.date()
 
         # --- Simulate Customer Reactivation ---
         while True:
@@ -144,15 +150,17 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
                 reactivation_date = last_cart_date + reactivation_delay
  
                 if reactivation_date <= global_end_date:
+                    random_time = faker_instance.time_object()
+                    reactivation_datetime = datetime.combine(reactivation_date, random_time)
                     carts.append({
                         "cart_id": generate_cart_id(faker_instance),
                         "customer_id": customer['customer_id'],
-                        "created_at": reactivation_date.isoformat(),
+                        "created_at": reactivation_datetime.isoformat(),
+                        "updated_at": reactivation_datetime.isoformat(),
                         "status": "open",
                         "cart_total": 0.0,
-                        "is_reactivation_cart": True # Add the flag
                     })
-                    last_cart_date = reactivation_date # Update for next potential reactivation
+                    last_cart_date = reactivation_datetime.date() # Update for next potential reactivation
                 else:
                     break # Stop if reactivation is outside the simulation window
             else:
@@ -189,6 +197,11 @@ def generate_cart_items(columns: List[str], num_rows: int, faker_instance: Faker
     if not products:
         raise ValueError("Product catalog must be present in lookup_cache.")
 
+    global_end_date = lookup_cache.get("global_end_date")
+    if not global_end_date:
+        # This is a critical piece of information for ensuring data consistency.
+        raise ValueError("global_end_date not found in lookup_cache. It should be set in the main run script.")
+
     # NEW: Create a customer tier lookup for quick access
     customers_by_id = {c['customer_id']: c for c in lookup_cache.get('customers', [])}
 
@@ -220,6 +233,7 @@ def generate_cart_items(columns: List[str], num_rows: int, faker_instance: Faker
 
         num_items_in_cart = random.randint(item_count_range[0], item_count_range[1])
         cart_total = 0.0
+        last_item_added_at = datetime.fromisoformat(cart["created_at"])
         
         # Get category preferences for this customer's channel
         prefs = category_prefs_by_channel.get(signup_channel, {})
@@ -243,19 +257,29 @@ def generate_cart_items(columns: List[str], num_rows: int, faker_instance: Faker
             quantity = random.randint(quantity_range[0], quantity_range[1])
             item_total = product["unit_price"] * quantity
 
+            # Item is added some time after the cart was created or the last item was added
+            item_added_at = last_item_added_at + timedelta(seconds=random.randint(1, 300))
+            if item_added_at.date() > global_end_date: # Ensure it doesn't go past the simulation end date
+                item_added_at = datetime.combine(global_end_date, datetime.max.time())
+
             item = {
                 "cart_item_id": cart_item_id_counter,
                 "cart_id": cart["cart_id"],
                 "product_id": product["product_id"],
                 "product_name": product["product_name"],
                 "category": product["category"],
+                "added_at": item_added_at.isoformat(),
                 "quantity": quantity,
                 "unit_price": product["unit_price"],
             }
             all_items.append(item)
             cart_total += item_total
             cart_item_id_counter += 1
+            last_item_added_at = item_added_at
         
-        cart_updates[cart["cart_id"]] = {"cart_total": round(cart_total, 2)}
+        cart_updates[cart["cart_id"]] = {
+            "cart_total": round(cart_total, 2),
+            "updated_at": last_item_added_at.isoformat()
+        }
 
     return all_items, cart_updates

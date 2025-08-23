@@ -50,6 +50,8 @@ def run_injection(data_dir: str, messiness_level: str, config_path: str = None):
     # These are general string columns where stylistic mess is common.
 
     string_cols_for_stylistic_mess = {
+        "shopping_carts.csv": ["status"],
+        "cart_items.csv": ["product_name", "category"],
         "orders.csv": ["order_channel", "payment_method", "shipping_speed", "customer_tier", "clv_bucket"],
         "order_items.csv": ["product_name", "category"],
         "returns.csv": ["reason", "return_type", "return_channel"],
@@ -62,6 +64,8 @@ def run_injection(data_dir: str, messiness_level: str, config_path: str = None):
     # Note: Guest shopper specific nulls are handled in generator_customers.py directly.
     null_inject_cols = {
         "customers.csv": ["email_verified", "marketing_opt_in"],  # These are booleans, but can be NaN
+        "shopping_carts.csv": ["updated_at"],
+        "cart_items.csv": ["added_at"],
         "orders.csv": ["agent_id"],  # For online orders, agent_id might be null/empty
         "returns.csv": ["agent_id"],  # For web returns, agent_id might be null/empty
     }

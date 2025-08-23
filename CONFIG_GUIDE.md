@@ -59,6 +59,9 @@ The `parameters` section is where you control the most important aspects of the 
 
 `first_purchase_conversion_boost`: A multiplier that increases the conversion rate for a customer's *first* potential purchase, based on their `signup_channel`. This simulates more effective onboarding for certain channels (e.g., `Phone`).
 
+`time_to_first_cart_days_range`: Controls how many days after signing up a new customer will create their first shopping cart, simulating the initial engagement period.
+
+`abandoned_cart_emptied_prob`: The probability that a cart that is not converted will be marked as `emptied` (with a total of 0 and no items) versus `abandoned` (with items remaining). This helps distinguish between passive abandonment and active disinterest.
 ### Customer Lifecycle & Behavioral Modeling
 
 This is controlled by the `repeat_purchase_settings` block, which now supports highly stratified behavior.

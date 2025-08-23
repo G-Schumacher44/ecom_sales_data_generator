@@ -319,6 +319,7 @@ def main():
             print("🛒 Carts and items generated. Processing conversions...")
             conversion_rate = config.get_parameter('conversion_rate', 0.03)
             boosts = config.get_parameter('first_purchase_conversion_boost', {})
+            emptied_prob = config.get_parameter('abandoned_cart_emptied_prob', 0.15)
             carts = lookup_cache.get('shopping_carts', [])
             customers_by_id = {c['customer_id']: c for c in lookup_cache.get('customers', [])}
 
@@ -326,6 +327,7 @@ def main():
                 converted_carts = []
                 customers_with_orders = set()
                 # Sort carts by creation date to process in chronological order
+                abandoned_carts_to_process = []
                 for cart in sorted(carts, key=lambda x: x['created_at']):
                     customer_id = cart['customer_id']
                     
@@ -342,13 +344,41 @@ def main():
                         converted_carts.append(cart)
                         customers_with_orders.add(customer_id)
                     else:
+                        # Don't set status yet, just collect for post-processing
+                        abandoned_carts_to_process.append(cart)
+
+                # Now process the abandoned carts to set final status (abandoned vs emptied)
+                cart_items_df = pd.DataFrame(lookup_cache.get('cart_items', []))
+                cart_ids_to_empty = set()
+
+                for cart in abandoned_carts_to_process:
+                    if random.random() < emptied_prob:
+                        cart['status'] = 'emptied'
+                        cart['cart_total'] = 0.0
+                        cart_ids_to_empty.add(cart['cart_id'])
+                    else:
                         cart['status'] = 'abandoned'
+
+                # Filter out items from emptied carts
+                if not cart_items_df.empty and cart_ids_to_empty:
+                    cart_items_df = cart_items_df[~cart_items_df['cart_id'].isin(cart_ids_to_empty)]
+                    lookup_cache['cart_items'] = cart_items_df.to_dict(orient='records')
+                    print(f"  Emptied {len(cart_ids_to_empty)} abandoned carts.")
+
                 lookup_cache['converted_carts'] = converted_carts
                 total_carts = len(carts)
                 actual_conversion_rate = len(converted_carts) / total_carts if total_carts > 0 else 0
                 print(f"  {len(converted_carts)} of {total_carts} carts converted into orders (Target: {conversion_rate:.2%}, Actual: {actual_conversion_rate:.2%}).")
                 save_table_to_csv(lookup_cache["shopping_carts"], carts_columns, carts_csv_path)
                 print(f"💾 Re-saved 'shopping_carts' with conversion status ➜ {carts_csv_path}")
+                # Re-save cart_items after some may have been emptied
+                if 'cart_items' in lookup_cache:
+                    cart_items_table_config = config.get_table_config("cart_items")
+                    if cart_items_table_config:
+                        cart_items_columns = [col['name'] for col in cart_items_table_config.get('columns', [])]
+                        cart_items_csv_path = os.path.join(output_dir, "cart_items.csv")
+                        save_table_to_csv(lookup_cache["cart_items"], cart_items_columns, cart_items_csv_path)
+                        print(f"💾 Re-saved 'cart_items' after emptying abandoned carts ➜ {cart_items_csv_path}")
 
         if table_name == "return_items":
             if "returns" in lookup_cache:

@@ -93,8 +93,9 @@ tables:
       - { name: cart_id, type: TEXT }
       - { name: customer_id, type: TEXT }
       - { name: created_at, type: DATE }
+      - { name: updated_at, type: DATE } # NEW: Tracks last cart activity
       - { name: cart_total, type: REAL }
-      - { name: status, type: TEXT } # open, converted, abandoned
+      - { name: status, type: TEXT } # open, converted, abandoned, emptied
 
   - name: cart_items
     item_count_range: [1, 8]
@@ -104,6 +105,7 @@ tables:
       - { name: product_id, type: INTEGER }
       - { name: product_name, type: TEXT }
       - { name: category, type: TEXT }
+      - { name: added_at, type: DATE } # NEW: Tracks when item was added
       - { name: quantity, type: INTEGER }
       - { name: unit_price, type: REAL }
 
@@ -553,6 +555,8 @@ parameters:
   reactivation_settings:
     probability: 0.08 # 8% of customers will have a reactivation event.
     delay_days_range: [200, 400] # The gap before they return.
+  # NEW: The probability that an abandoned cart will be "emptied" (total set to 0) vs. left full.
+  abandoned_cart_emptied_prob: 0.15
   # NEW: Varies the base return rate by the customer's original signup channel.
   return_rate_by_signup_channel:
     'Social Media': 0.35 # Higher returns from impulse buys

@@ -89,6 +89,8 @@ This generator goes beyond simple row creation by simulating a complete, interco
 
 - **Full Sales Funnel**: Models the entire customer journey from browsing to purchase. It generates a large volume of `shopping_carts` and then "converts" a small, configurable percentage into `orders`, realistically simulating cart abandonment.
 - **Time-Aware Customer Behavior**: Simulates customer return visits over a one-year period. The likelihood of a repeat purchase is tied to `loyalty_tier`, and the time between visits is randomized, creating rich data for cohort analysis.
+- **Nuanced Cart Abandonment**: The simulation distinguishes between carts that are abandoned with items still in them and carts that are explicitly emptied by the user, providing deeper insight into user intent.
+- **Detailed Cart Lifecycle**: Each cart and cart item now includes `created_at`, `updated_at`, and `added_at` timestamps, allowing for granular analysis of shopping session duration and user behavior within the cart.
 - **Dynamic Returns**: The number of returns is not fixed but is generated as a percentage of total orders, ensuring that return volumes scale realistically with sales.
 - **Contextual Messiness**: The messiness engine can inject not just random noise but also contextual issues, like biased return reasons based on product category or seasonal sales spikes during holiday months.
 - **Channel-Specific Behavior**: Models distinct customer behavior based on their acquisition channel (`signup_channel`), influencing their purchase frequency, return rates, and even product category preferences.
@@ -100,13 +102,16 @@ This generator goes beyond simple row creation by simulating a complete, interco
 <details>
 <summary><strong>🫆 Version Release Notes</strong></summary>
 
+<summary><strong>🫆 Version Release Notes</strong></summary>
+
 ### ✅ v0.3.0 (Current)
 
+- **Enriched Cart & Session Analysis**: Added detailed timestamps (`created_at`, `updated_at`, `added_at`) to all cart events and distinguished between `abandoned` and `emptied` carts, enabling granular analysis of shopper sessions and user intent.
 - **Advanced Behavioral Modeling**: Introduced highly stratified customer behavior based on `signup_channel` and `loyalty_tier`. This includes distinct repeat purchase rates, inter-order timing, return rates, and product category preferences.
 - **Earned Customer Status**: Implemented logic for customers to "earn" their `loyalty_tier` and `clv_bucket` based on their cumulative spend, creating a more realistic customer lifecycle.
 - **Long-Tail Churn & Reactivation**: Added simulation of long-term dormancy and customer reactivation, providing richer data for advanced cohort and LTV analysis.
-- **Enhanced Refund Realism**: Refund logic is now driven by the `reason` for the return, with configurable probabilities for full vs. partial refunds.
-- **Seasonal & Event-Driven Spikes**: Added `seasonal_factors` to simulate volume spikes for events like holiday sales, creating non-flat cohort shapes.
+
+
 
 ---
 
@@ -117,7 +122,14 @@ This generator goes beyond simple row creation by simulating a complete, interco
 - Shipping & fulfillment enrichment: lead times, delivery lag, backorders
 - Marketing program metadata: coupons, campaign IDs
 - Warehousing & inventory extension (WMS simulation layer)
+___
+### ✅ v0.2.5 (Pre-Release)
 
+- **Advanced Behavioral Modeling**: Introduced highly stratified customer behavior based on `signup_channel` and `loyalty_tier`. This includes distinct repeat purchase rates, inter-order timing, return rates, and product category preferences.
+- **Earned Customer Status**: Implemented logic for customers to "earn" their `loyalty_tier` and `clv_bucket` based on their cumulative spend, creating a more realistic customer lifecycle.
+- **Long-Tail Churn & Reactivation**: Added simulation of long-term dormancy and customer reactivation, providing richer data for advanced cohort and LTV analysis.
+- **Enhanced Refund Realism**: Refund logic is now driven by the `reason` for the return, with configurable probabilities for full vs. partial refunds.
+- **Seasonal & Event-Driven Spikes**: Added `seasonal_factors` to simulate volume spikes for events like holiday sales, creating non-flat cohort shapes.
 ---
 ### ✅ v0.2.0
 - **Full Funnel Simulation**: Added `shopping_carts` and `cart_items` to model the complete customer journey from browsing session to purchase.

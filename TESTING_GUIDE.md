@@ -52,6 +52,8 @@ This is the most important test suite for ensuring data quality. It is **execute
   1.  That the number of rows in the `orders` table exactly matches the number of `shopping_carts` with a `status` of "converted."
   2.  That the actual cart-to-order conversion rate is statistically close to the `conversion_rate` configured in the YAML file.
 - **`validate_repeat_purchase_propensity`**: Checks that the actual percentage of customers who make a second purchase aligns with the behavior defined in the `repeat_purchase_settings` in the YAML file.
+- **`validate_cart_totals`**: Ensures that the `cart_total` in the `shopping_carts` table is consistent with its status. For `converted` and `abandoned` carts, it must match the sum of its items. For `emptied` carts, the total must be zero and it must have no associated items.
+- **`validate_cart_timestamps`**: Checks for logical consistency among cart-related timestamps (e.g., an item's `added_at` cannot be before the cart's `created_at`).
 - **`validate_return_refunds`**: Ensures that the `refunded_amount` in the `returns` table header correctly matches the sum of the `refunded_amount` of its associated `return_items`.
 - **`validate_date_fields`**: Checks for invalid date formats and ensures logical consistency (e.g., a `return_date` cannot be before its `order_date`).
 - **`validate_repeat_purchase_propensity`**: A sophisticated check that verifies the actual repeat purchase rate for each customer segment (defined by `signup_channel` and `loyalty_tier`) is statistically close to the expected rate derived from the `propensity_by_channel_and_tier` configuration.
