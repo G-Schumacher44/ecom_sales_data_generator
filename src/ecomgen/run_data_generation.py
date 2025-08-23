@@ -98,18 +98,9 @@ def _calculate_and_apply_earned_status(lookup_cache, config, output_dir):
     # Update the master lookup_cache
     lookup_cache['customers'] = updated_customers_df.to_dict(orient='records')
 
-    # Update the orders DataFrame with the customer's final earned status using efficient .map()
-    if tier_thresholds:
-        customer_tier_map = updated_customers_df.set_index('customer_id')['loyalty_tier'].to_dict()
-        # Use the map to update 'customer_tier'. For any customer_id not in the map,
-        # their original 'customer_tier' value is preserved by filling NaN with the original series.
-        orders_df['customer_tier'] = orders_df['customer_id'].map(customer_tier_map).fillna(orders_df['customer_tier'])
-
-    if clv_thresholds:
-        customer_clv_map = updated_customers_df.set_index('customer_id')['clv_bucket'].to_dict()
-        # Same logic for clv_bucket
-        orders_df['clv_bucket'] = orders_df['customer_id'].map(customer_clv_map).fillna(orders_df['clv_bucket'])
-
+    # The `orders` table is NOT updated here. It correctly retains the evolving
+    # tier and clv_bucket status calculated at the time each order was generated.
+    # Only the `customers` table should reflect the final, current state of the customer.
     lookup_cache['orders'] = orders_df.to_dict(orient='records')
     print("✅ Applied earned status to customers and orders.")
 
@@ -125,6 +116,7 @@ def main():
     parser.add_argument('--messiness-level', type=str, default='baseline',
                         choices=["baseline", "none", "light_mess", "medium_mess", "heavy_mess"],
                         help='Level of messiness to inject into data post-generation.')
+    parser.add_argument('--debug', action='store_true', help='Enable detailed debug logging for QA tests')
     args = parser.parse_args()
 
     if args.messiness_level == "none":
@@ -431,7 +423,7 @@ def main():
 
     print("🧪 Running QA tests to validate output...")
     try:
-        run_all_tests(data_dir=output_dir, messiness=messiness_level)
+        run_all_tests(data_dir=output_dir, messiness=messiness_level, debug=args.debug)
         print("✅ QA tests completed successfully.")
     except Exception as e:
         print(f"❌ QA tests failed with error: {e}")

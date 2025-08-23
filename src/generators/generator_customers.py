@@ -147,6 +147,7 @@ def generate_customers(num_customers=1000, faker=None, config=None, guest_shoppe
             'age': random.randint(min_age, max_age),
             'gender': gender,
             'loyalty_tier': loyalty_tier,
+            'initial_loyalty_tier': loyalty_tier, # Set initial tier
             'signup_date': signup_date_dt.isoformat(),
             'customer_status': random.choices(customer_status_options, customer_status_probs)[0],
             'email_verified': random.random() < email_verified_prob,
@@ -289,6 +290,7 @@ def generate_guest_customers(num_guest_customers, faker=None, config=None, start
             'age': age,
             'gender': gender,
             'loyalty_tier': loyalty_tier,
+            'initial_loyalty_tier': loyalty_tier, # Guests have no initial tier
             'signup_date': signup_date_dt,
             'customer_status': customer_status,
             'email': email,

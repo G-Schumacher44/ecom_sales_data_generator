@@ -72,6 +72,7 @@ tables:
       - { name: customer_status, type: TEXT, options: ["Active", "Inactive"], probabilities: [0.9, 0.1] }
       - { name: signup_channel, type: TEXT }
       - { name: loyalty_tier, type: TEXT, options: ["Bronze", "Silver", "Gold", "Platinum"] }
+      - { name: initial_loyalty_tier, type: TEXT } # NEW: The tier assigned at signup, before any spend.
       - { name: email_verified, type: BOOLEAN }
       - { name: marketing_opt_in, type: BOOLEAN }
       - { name: mailing_address, type: TEXT }

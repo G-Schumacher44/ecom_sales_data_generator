@@ -5,7 +5,7 @@ pre-purchase user sessions.
 """
 
 import random
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 from collections import defaultdict
 import numpy as np
 from datetime import datetime, timedelta
@@ -44,14 +44,16 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
     carts = []
     
     # --- 1. Generate Initial Shopping Sessions ---
-    # `num_rows` represents the volume of initial traffic.
-    # We sample customers *with replacement* to assign these initial sessions.
-    initial_cart_assignments = random.choices(customers, k=num_rows)
+    # `num_rows` determines the number of unique customers who will have an initial session.
+    # We sample customers *without replacement* to ensure each customer gets at most one initial cart.
+    # This prevents unintended repeaters from being created at this stage.
+    num_initial_shoppers = min(num_rows, len(customers))
+    initial_shoppers = random.sample(customers, k=num_initial_shoppers)
     
     # Keep track of the last cart date for each customer to chain repeat visits correctly.
     customer_last_cart_info = {}
 
-    for customer in initial_cart_assignments:
+    for customer in initial_shoppers:
         signup_date_str = customer.get('signup_date')
         
         initial_cart_date = None
@@ -92,34 +94,36 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
     for customer_id, info in customer_last_cart_info.items():
         customer = info['customer_data']
         last_cart_date = info['last_date']
+        initial_cart_date_anchor = info['last_date'] # Use this for independent event calculations
         
-        tier = customer.get('loyalty_tier', 'default')
-        signup_channel = customer.get('signup_channel')
+        # Use `or 'default'` to safely handle cases where a key's value is None,
+        # which `get()` with a default parameter does not handle.
+        tier = customer.get('initial_loyalty_tier') or 'default'
+        signup_channel = customer.get('signup_channel') or 'default'
         signup_date_str = customer.get('signup_date')
 
+        # --- Organic Repeat Visits (Poisson Process) ---
+        # Get the configured average number of repeat visits (lambda) for the customer's segment.
+        # This aligns with the comment in the config and the logic in the QA test.
         channel_propensities = propensity_config.get(signup_channel, propensity_config.get('default', {}))
-        if isinstance(channel_propensities, dict):
-            avg_repeat_visits = channel_propensities.get(tier, channel_propensities.get('default', 0.1))
-        else:
-            avg_repeat_visits = propensity_config.get(tier, propensity_config.get('default', 0.1))
+        avg_repeat_visits_lambda = channel_propensities.get(tier, channel_propensities.get('default', 0.1))
 
+        # Apply cohort-based retention shocks, which directly modify the visit propensity (lambda).
         if signup_date_str:
             cohort_month_key = signup_date_str[:7] # 'YYYY-MM'
             if cohort_month_key in retention_shocks:
-                avg_repeat_visits *= retention_shocks[cohort_month_key]
- 
-        channel_delays = time_delay_config.get(signup_channel, time_delay_config.get('default', {}))
-        if isinstance(channel_delays, dict):
-            delay_config = channel_delays.get(tier, {'range': default_delay_range, 'sigma': 0.6})
-            delay_range = delay_config.get('range', default_delay_range)
-            sigma = delay_config.get('sigma', 0.6)
-        else:
-            delay_range = time_delay_config.get(tier, default_delay_range)
-            sigma = 0.6
- 
-        num_repeat_visits = np.random.poisson(lam=avg_repeat_visits)
+                avg_repeat_visits_lambda *= retention_shocks[cohort_month_key]
 
-        for _ in range(num_repeat_visits):
+        # Get time delay settings for this segment.
+        channel_delays = time_delay_config.get(signup_channel, time_delay_config.get('default', {}))
+        delay_config = channel_delays.get(tier, channel_delays.get('default', {}))
+        delay_range = delay_config.get('range', default_delay_range)
+        sigma = delay_config.get('sigma', 0.6)
+ 
+        # Generate the number of organic repeat visits from the Poisson distribution.
+        num_repeat_visits = np.random.poisson(lam=avg_repeat_visits_lambda)
+
+        for i in range(num_repeat_visits):
             mean_delay = (delay_range[0] + delay_range[1]) / 2
             mu = np.log(mean_delay) - (sigma**2 / 2)
             delay = int(np.random.lognormal(mean=mu, sigma=sigma))
@@ -127,7 +131,18 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
             next_cart_date = last_cart_date + timedelta(days=delay)
 
             if next_cart_date > global_end_date:
-                continue
+                # BUG FIX: The original 'continue' would truncate visits that should occur,
+                # causing the actual repeat rate to be lower than the configured propensity.
+                # This was especially true for customers who signed up later in the year.
+                # To fix this, if a visit would fall out of bounds, we instead place it
+                # within the remaining time window to ensure the Poisson-generated number
+                # of visits is respected.
+                time_left_days = (global_end_date - last_cart_date).days
+                if time_left_days > 0:
+                    next_cart_date = last_cart_date + timedelta(days=random.randint(1, time_left_days))
+                else:
+                    # No time left, so we can't place this or any subsequent visits.
+                    break
 
             random_time = faker_instance.time_object()
             next_cart_datetime = datetime.combine(next_cart_date, random_time)
@@ -141,51 +156,101 @@ def generate_shopping_carts(columns: List[str], num_rows: int, faker_instance: F
             })
             last_cart_date = next_cart_datetime.date()
 
-        # --- Simulate Customer Reactivation ---
-        while True:
-            reactivation_prob = reactivation_settings.get('probability', 0)
-            if random.random() < reactivation_prob:
-                delay_range = reactivation_settings.get('delay_days_range', [180, 365])
-                reactivation_delay = timedelta(days=random.randint(delay_range[0], delay_range[1]))
-                reactivation_date = last_cart_date + reactivation_delay
- 
-                if reactivation_date <= global_end_date:
-                    random_time = faker_instance.time_object()
-                    reactivation_datetime = datetime.combine(reactivation_date, random_time)
-                    carts.append({
-                        "cart_id": generate_cart_id(faker_instance),
-                        "customer_id": customer['customer_id'],
-                        "created_at": reactivation_datetime.isoformat(),
-                        "updated_at": reactivation_datetime.isoformat(),
-                        "status": "open",
-                        "cart_total": 0.0,
-                    })
-                    last_cart_date = reactivation_datetime.date() # Update for next potential reactivation
-                else:
-                    break # Stop if reactivation is outside the simulation window
-            else:
-                break
+        # --- Independent Reactivation Process ---
+        # This is a separate Bernoulli trial, independent of the organic repeat visits.
+        reactivation_prob = reactivation_settings.get('probability', 0)
+        if random.random() < reactivation_prob:
+            delay_range = reactivation_settings.get('delay_days_range', [180, 365])
+            reactivation_delay = timedelta(days=random.randint(delay_range[0], delay_range[1]))
+            reactivation_date = initial_cart_date_anchor + reactivation_delay
 
+            if reactivation_date <= global_end_date:
+                random_time = faker_instance.time_object()
+                reactivation_datetime = datetime.combine(reactivation_date, random_time)
+                carts.append({
+                    "cart_id": generate_cart_id(faker_instance),
+                    "customer_id": customer['customer_id'],
+                    "created_at": reactivation_datetime.isoformat(),
+                    "updated_at": reactivation_datetime.isoformat(),
+                    "status": "open",
+                    "cart_total": 0.0,
+                    "is_reactivation_cart": True
+                })
+
+    # --- 3. Apply Seasonal Spikes ---
+    # This logic increases cart volume in certain months.
+    # BUG FIX: The previous logic applied to all carts, which could turn a single-cart
+    # customer into a repeat customer, artificially inflating the repeat rate and
+    # breaking the propensity QA test.
+    # The corrected logic only applies seasonal spikes to customers who are ALREADY
+    # repeat shoppers, modeling seasonality as an increase in frequency for engaged
+    # customers, not the creation of new ones.
     if seasonal_factors:
-        spiked_carts = []
-        for cart in list(carts):
-            try:
-                cart_month = int(cart['created_at'][5:7])
-                multiplier = seasonal_factors.get(str(cart_month), seasonal_factors.get(cart_month, 1.0))
+        # Create a pristine copy of the carts generated by the propensity models
+        # before any seasonal modifications are made.
+        base_carts = list(carts)
 
-                # For each cart in a spike month, probabilistically add new "clone" carts
-                # to approach the desired volume multiplier.
-                if multiplier > 1.0:
-                    if random.random() < (multiplier - 1): # e.g., 1.6 multiplier gives 60% chance to clone
-                        new_cart = cart.copy()
-                        new_cart['cart_id'] = generate_cart_id(faker_instance)
-                        spiked_carts.append(new_cart)
+        # Identify repeaters from the BASE carts, before any seasonal additions.
+        # This is the critical step to prevent creating "artificial" repeaters.
+        carts_per_customer = defaultdict(int)
+        for cart in base_carts:
+            carts_per_customer[cart['customer_id']] += 1
+        
+        repeater_customer_ids = {
+            cid for cid, count in carts_per_customer.items() if count > 1
+        }
+
+        additional_carts = []
+        # Iterate over the BASE carts to decide where to add seasonal spikes.
+        # This prevents a cart added by seasonality from itself generating more carts.
+        for cart in base_carts:
+            # Only apply seasonal spikes to carts belonging to existing repeaters.
+            if cart['customer_id'] not in repeater_customer_ids:
+                continue
+
+            try:
+                cart_dt = datetime.fromisoformat(cart['created_at'])
+                cart_month = cart_dt.month
             except (ValueError, TypeError):
-                continue # Skip if date is malformed
-        carts.extend(spiked_carts)
+                continue
+
+            multiplier = seasonal_factors.get(str(cart_month), seasonal_factors.get(cart_month, 1.0))
+
+            # For each existing cart, the multiplier determines the chance of adding more carts.
+            # A multiplier of 1.6 means a 60% chance of adding one extra cart,
+            # and a smaller chance of adding more. We model this by treating the
+            # fractional part of the multiplier as a probability.
+            if multiplier > 1.0:
+                # The number of extra carts to consider adding is the integer part of the multiplier - 1
+                num_extra_carts_base = int(multiplier - 1)
+                # The fractional part is the probability of adding one more
+                prob_extra_cart_rand = multiplier - (num_extra_carts_base + 1)
+
+                num_to_add = num_extra_carts_base
+                if random.random() < prob_extra_cart_rand:
+                    num_to_add += 1
+
+                for _ in range(num_to_add):
+                    # Create a new cart for the SAME customer
+                    new_cart = cart.copy()
+                    new_cart['customer_id'] = cart['customer_id'] # Explicitly ensure it's the same customer
+                    new_cart['cart_id'] = generate_cart_id(faker_instance)
+
+                    # Add a small random offset to the date to avoid exact duplicates
+                    # and keep it within the same month.
+                    offset = timedelta(days=random.uniform(0, 3), hours=random.uniform(-12, 12))
+                    new_cart_dt = cart_dt + offset
+
+                    # Ensure the new date is still in the same month and within bounds
+                    if new_cart_dt.month == cart_month and new_cart_dt.date() <= global_end_date:
+                        new_cart['created_at'] = new_cart_dt.isoformat()
+                        new_cart['updated_at'] = new_cart_dt.isoformat() # Reset updated_at
+                        new_cart.pop("is_reactivation_cart", None)
+                        additional_carts.append(new_cart)
+        carts.extend(additional_carts)
     return carts
 
-def generate_cart_items(columns: List[str], num_rows: int, faker_instance: Faker, lookup_cache: Dict, config: Any) -> (List[Dict[str, Any]], Dict[str, Dict[str, Any]]):
+def generate_cart_items(columns: List[str], num_rows: int, faker_instance: Faker, lookup_cache: Dict, config: Any) -> Tuple[List[Dict[str, Any]], Dict[str, Dict[str, Any]]]:
     """
     Generates items for each shopping cart.
     """
@@ -223,8 +288,11 @@ def generate_cart_items(columns: List[str], num_rows: int, faker_instance: Faker
 
     for cart in carts:
         customer = customers_by_id.get(cart['customer_id'])
-        tier = customer.get('loyalty_tier', 'default') if customer else 'default'
+        tier = customer.get('initial_loyalty_tier', 'default') if customer else 'default'
         signup_channel = customer.get('signup_channel', 'default') if customer else 'default'
+
+        # Get created_at as a datetime object for direct use and comparison
+        created_at_dt = datetime.fromisoformat(cart["created_at"])
 
         # NEW: Determine cart size and item quantity based on tier
         tier_behavior = cart_behavior_by_tier.get(tier, {})
@@ -233,7 +301,7 @@ def generate_cart_items(columns: List[str], num_rows: int, faker_instance: Faker
 
         num_items_in_cart = random.randint(item_count_range[0], item_count_range[1])
         cart_total = 0.0
-        last_item_added_at = datetime.fromisoformat(cart["created_at"])
+        last_item_added_at = created_at_dt
         
         # Get category preferences for this customer's channel
         prefs = category_prefs_by_channel.get(signup_channel, {})
@@ -277,6 +345,12 @@ def generate_cart_items(columns: List[str], num_rows: int, faker_instance: Faker
             cart_item_id_counter += 1
             last_item_added_at = item_added_at
         
+        # Defensive check: Ensure updated_at is never before created_at.
+        # This handles any edge cases where the item addition loop might not run
+        # or if a negative timedelta was somehow introduced.
+        if last_item_added_at < created_at_dt:
+            last_item_added_at = created_at_dt
+
         cart_updates[cart["cart_id"]] = {
             "cart_total": round(cart_total, 2),
             "updated_at": last_item_added_at.isoformat()

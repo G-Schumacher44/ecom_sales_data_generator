@@ -51,13 +51,15 @@ def run_injection(data_dir: str, messiness_level: str, config_path: str = None):
 
     string_cols_for_stylistic_mess = {
         "shopping_carts.csv": ["status"],
-        "cart_items.csv": ["product_name", "category"],
-        "orders.csv": ["order_channel", "payment_method", "shipping_speed", "customer_tier", "clv_bucket"],
-        "order_items.csv": ["product_name", "category"],
+        "cart_items.csv": ["product_name"],
+        "orders.csv": ["payment_method", "shipping_speed", "clv_bucket"],
+        "order_items.csv": ["product_name"],
         "returns.csv": ["reason", "return_type", "return_channel"],
         "return_items.csv": ["product_name"],
-        "product_catalog.csv": ["product_name", "category"],
-        "customers.csv": ["gender", "customer_status", "signup_channel", "loyalty_tier"]
+        "product_catalog.csv": ["product_name"],
+        # Do not inject stylistic mess into key categorical columns used for segmentation
+        # as it breaks the analysis script's ability to group data correctly.
+        "customers.csv": ["gender", "customer_status"]
     }
 
     # Fields where random nulls might be introduced (optional data, non-critical FKs)

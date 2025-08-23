@@ -304,7 +304,7 @@ def validate_conversion_funnel(dataframes, messiness, config):
 
     logger.info("✅ Conversion funnel (carts to orders) is consistent.")
 
-def validate_repeat_purchase_propensity(dataframes, messiness, config, tolerance=0.07):
+def validate_repeat_purchase_propensity(dataframes, messiness, config, tolerance=0.07, debug=False):
     """
     Checks if the actual repeat purchase rate per customer segment (channel/tier)
     is within a reasonable tolerance of the configured propensity.
@@ -316,6 +316,15 @@ def validate_repeat_purchase_propensity(dataframes, messiness, config, tolerance
     orders_df = dataframes['orders']
     customers_df = dataframes['customers']
     repeat_settings = config.get_parameter('repeat_purchase_settings', {})
+
+    # Exclude reactivation orders from this specific validation, as they are
+    # driven by a separate probability model (reactivation_settings).
+    if 'is_reactivated' in orders_df.columns:
+        orders_df = orders_df[orders_df['is_reactivated'] == False]
+
+    carts_df = dataframes.get('shopping_carts')
+    seasonal_factors = config.get_parameter('seasonal_factors', {})
+
     propensity_config = repeat_settings.get('propensity_by_channel_and_tier', {})
     cart_conversion_rate = config.get_parameter('conversion_rate', 0.03)
 
@@ -324,25 +333,113 @@ def validate_repeat_purchase_propensity(dataframes, messiness, config, tolerance
         return
 
     order_counts = orders_df.groupby('customer_id').size().reset_index(name='order_count')
-    merged_df = pd.merge(order_counts, customers_df[['customer_id', 'loyalty_tier', 'signup_channel']], on='customer_id', how='left')
-    merged_df['loyalty_tier'] = merged_df['loyalty_tier'].fillna('default')
+    # BUG FIX: The population for validation must be ALL customers in a segment,
+    # not just those who made a purchase. We start with customers_df and left-join order counts.
+    merged_df = pd.merge(customers_df[['customer_id', 'initial_loyalty_tier', 'signup_channel']], order_counts, on='customer_id', how='left')
+    merged_df['order_count'] = merged_df['order_count'].fillna(0) # Customers with no orders get a count of 0.
+
+    merged_df['initial_loyalty_tier'] = merged_df['initial_loyalty_tier'].fillna('default')
     merged_df['signup_channel'] = merged_df['signup_channel'].fillna('default')
 
     # Iterate through the nested configuration to validate each segment
     for channel, tier_propensities in propensity_config.items():
         if not isinstance(tier_propensities, dict): continue
         for tier, avg_visits_propensity in tier_propensities.items():
-            segment_customers = merged_df[(merged_df['signup_channel'] == channel) & (merged_df['loyalty_tier'] == tier)]
+            segment_customers = merged_df[(merged_df['signup_channel'] == channel) & (merged_df['initial_loyalty_tier'] == tier)]
             if segment_customers.empty:
                 continue
 
-            # With the Poisson model for visits, the probability of at least one repeat purchase is 1 - e^(-lambda * p)
-            # where lambda is the visit propensity (avg visits) and p is the conversion rate.
-            expected_repeat_order_rate = 1 - np.exp(-avg_visits_propensity * cart_conversion_rate)
+            # --- NEW: Calculate effective seasonality multiplier on a PER-SEGMENT basis ---
+            # The previous logic used a single global multiplier, which was incorrect because
+            # different segments have different temporal distributions and are thus affected
+            # by seasonality differently. This logic now calculates the multiplier for each segment.
+            effective_multiplier = 1.0
+            if carts_df is not None and not carts_df.empty and seasonal_factors:
+                segment_customer_ids = set(segment_customers['customer_id'])
+                segment_carts_df = carts_df[carts_df['customer_id'].isin(segment_customer_ids)].copy()
+
+                if not segment_carts_df.empty:
+                    # From this segment's carts, find the repeaters. Seasonality only affects them.
+                    cart_counts = segment_carts_df['customer_id'].value_counts()
+                    repeater_ids_in_segment = cart_counts[cart_counts > 1].index
+                    repeater_carts_df = segment_carts_df[segment_carts_df['customer_id'].isin(repeater_ids_in_segment)].copy()
+
+                    if not repeater_carts_df.empty:
+                        repeater_carts_df['created_at_dt'] = pd.to_datetime(repeater_carts_df['created_at'], errors='coerce')
+                        repeater_carts_df.dropna(subset=['created_at_dt'], inplace=True)
+                        repeater_carts_df['month'] = repeater_carts_df['created_at_dt'].dt.month
+
+                        final_carts_per_month = repeater_carts_df['month'].value_counts()
+
+                        base_carts_sum = 0
+                        for month, count in final_carts_per_month.items():
+                            multiplier = seasonal_factors.get(str(month), seasonal_factors.get(month, 1.0))
+                            base_carts_sum += count / multiplier
+                        
+                        if base_carts_sum > 0:
+                            effective_multiplier = len(repeater_carts_df) / base_carts_sum
+
+            # --- NEW: Zero-Inflated Poisson Model for Expected Rate ---
+            # The generator's logic is a mixture model:
+            # 1. A Bernoulli trial determines IF a customer is a "repeater" based on base propensity.
+            # 2. Seasonality ONLY increases cart volume for those who are already repeaters.
+            # The test must model this, not a simple Poisson process.
+
+            # Base lambda for repeat CARTS (before seasonality)
+            lambda_base_carts = avg_visits_propensity
+
+            # The test is validating against non-reactivated orders, so the model
+            # should only consider the organic repeat process.
+            # P(is_repeater) = 1 - P(no organic repeats)
+            prob_is_repeater = 1 - np.exp(-lambda_base_carts)
+
+            if prob_is_repeater > 1e-9: # Avoid division by zero for tiny probabilities
+                # The model should only consider the organic repeat carts.
+                # The average number of base carts for a repeater is 1 (initial) + the
+                # conditional mean of the Poisson process for repeat carts.
+                # E[X|X>0] for a Poisson(lambda) is lambda / (1 - e^-lambda)
+                # So, avg_base_total_carts = 1 + (lambda / prob_is_repeater)
+                lambda_total_base_repeat_carts = lambda_base_carts
+                avg_base_total_carts_for_repeater = 1 + (lambda_base_carts / prob_is_repeater)
+
+                # 2. Amplify this by the seasonality multiplier to get the final cart volume
+                avg_final_total_carts_for_repeater = avg_base_total_carts_for_repeater * effective_multiplier
+
+                # 3. Calculate the lambda for REPEAT orders based on the amplified cart volume
+                # The number of repeat carts is the total minus the one initial cart.
+                lambda_repeat_orders_for_repeater = (avg_final_total_carts_for_repeater - 1) * cart_conversion_rate
+
+                # 4. Use this lambda in the formula for P(total_orders > 1 | is_repeater)
+                boost_config = config.get_parameter('first_purchase_conversion_boost', {})
+                boost_multiplier = boost_config.get(channel, 1.0)
+                boosted_conversion_rate = cart_conversion_rate * boost_multiplier
+
+                # P(total <= 1 | repeater) = P(repeat_orders=0) + P(initial=0, repeat_orders=1)
+                prob_repeater_has_0_repeat_orders = np.exp(-lambda_repeat_orders_for_repeater)
+                prob_repeater_has_1_repeat_order = lambda_repeat_orders_for_repeater * prob_repeater_has_0_repeat_orders
+                prob_total_le_1_for_repeater = prob_repeater_has_0_repeat_orders + (1 - boosted_conversion_rate) * prob_repeater_has_1_repeat_order
+                prob_gt_1_order_for_repeater = 1 - prob_total_le_1_for_repeater
+                
+                expected_repeat_order_rate = prob_is_repeater * prob_gt_1_order_for_repeater
+            else:
+                expected_repeat_order_rate = 0.0
 
             total_customers_in_segment = len(segment_customers)
             repeat_customers_in_segment = len(segment_customers[segment_customers['order_count'] > 1])
             actual_repeat_order_rate = repeat_customers_in_segment / total_customers_in_segment if total_customers_in_segment > 0 else 0
+
+            if debug:
+                logger.debug(f"--- Debugging Segment: {channel}/{tier} ---")
+                logger.debug(f"  Configured Avg Visits (lambda): {avg_visits_propensity}")
+                logger.debug(f"  Seasonal Multiplier: {effective_multiplier:.4f}")
+                logger.debug(f"  Prob. is Repeater: {prob_is_repeater:.4f}")
+                logger.debug(f"  Avg Final Carts for Repeater: {avg_final_total_carts_for_repeater:.4f}")
+                logger.debug(f"  Lambda for Repeater Orders: {lambda_repeat_orders_for_repeater:.4f}")
+                logger.debug(f"  P(>1 order | is repeater): {prob_gt_1_order_for_repeater:.4f}")
+                logger.debug(f"  Expected Rate: {expected_repeat_order_rate:.4f}")
+                logger.debug(f"  Actual Rate:   {actual_repeat_order_rate:.4f}")
+                logger.debug(f"  Total Customers in Segment: {total_customers_in_segment}")
+                logger.debug(f"  Repeat Customers in Segment: {repeat_customers_in_segment}")
 
             if not (expected_repeat_order_rate - tolerance <= actual_repeat_order_rate <= expected_repeat_order_rate + tolerance * 1.5): # Allow more upside variance
                 handle_issue(
@@ -374,7 +471,7 @@ def big_audit_statistical_checks(orders, returns, messiness, config):
 
 ### --- Main ---
 
-def run_all_tests(data_dir: str, messiness: str, run_big_audit: bool = False):
+def run_all_tests(data_dir: str, messiness: str, run_big_audit: bool = False, debug: bool = False):
     config = Config()
 
     # Load all data into a dictionary of DataFrames
@@ -393,7 +490,7 @@ def run_all_tests(data_dir: str, messiness: str, run_big_audit: bool = False):
     validate_date_fields(dataframes, messiness)
     test_agent_assignments(config, dataframes, messiness)
     validate_conversion_funnel(dataframes, messiness, config)
-    validate_repeat_purchase_propensity(dataframes, messiness, config)
+    validate_repeat_purchase_propensity(dataframes, messiness, config, debug=debug)
 
     # Optionally run big audit tests
     orders_dict = dataframes.get('orders', pd.DataFrame()).to_dict('records')
@@ -410,9 +507,10 @@ def main():
     parser.add_argument("--data-dir", type=str, required=True, help="Directory where CSV output files are located")
     parser.add_argument("--run-big-audit", action="store_true", help="Run the big audit checks in addition to baseline QA")
     parser.add_argument("--messiness", type=str, choices=["baseline", "light_mess", "medium_mess", "heavy_mess"], default="baseline", help="Level of messiness tolerance for QA")
+    parser.add_argument("--debug", action="store_true", help="Enable detailed debug logging for propensity tests")
     args = parser.parse_args()
     try:
-        run_all_tests(data_dir=args.data_dir, messiness=args.messiness, run_big_audit=args.run_big_audit)
+        run_all_tests(data_dir=args.data_dir, messiness=args.messiness, run_big_audit=args.run_big_audit, debug=args.debug)
     except Exception as e:
         logger.error(f"QA tests failed with error: {e}")
         sys.exit(1)
