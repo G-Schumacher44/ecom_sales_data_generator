@@ -67,6 +67,11 @@ def _calculate_and_apply_earned_status(lookup_cache, config, output_dir):
         print("  Skipping earned status calculation: orders or customers data not found.")
         return
 
+    # Separate guests from registered customers to avoid assigning them tiers
+    is_guest_col = customers_df['is_guest'].astype(bool)
+    guests_df = customers_df[is_guest_col].copy()
+    registered_customers_df = customers_df[~is_guest_col].copy()
+
     # Calculate cumulative spend per customer
     customer_spend = orders_df.groupby('customer_id')['order_total'].sum().to_dict()
 
@@ -77,28 +82,31 @@ def _calculate_and_apply_earned_status(lookup_cache, config, output_dir):
                 return name
         return None
 
-    # Apply earned tiers and CLV buckets to the customers DataFrame
-    customers_df['cumulative_spend'] = customers_df['customer_id'].map(customer_spend).fillna(0)
+    # Apply earned tiers and CLV buckets only to the registered customers DataFrame
+    registered_customers_df['cumulative_spend'] = registered_customers_df['customer_id'].map(customer_spend).fillna(0)
     if tier_thresholds:
-        customers_df['loyalty_tier'] = customers_df['cumulative_spend'].apply(lambda x: get_earned_value(x, tier_thresholds))
+        registered_customers_df['loyalty_tier'] = registered_customers_df['cumulative_spend'].apply(lambda x: get_earned_value(x, tier_thresholds))
     if clv_thresholds:
-        customers_df['clv_bucket'] = customers_df['cumulative_spend'].apply(lambda x: get_earned_value(x, clv_thresholds))
+        registered_customers_df['clv_bucket'] = registered_customers_df['cumulative_spend'].apply(lambda x: get_earned_value(x, clv_thresholds))
 
     # Drop the temporary calculation column before saving
-    customers_df = customers_df.drop(columns=['cumulative_spend'])
+    if 'cumulative_spend' in registered_customers_df.columns:
+        registered_customers_df = registered_customers_df.drop(columns=['cumulative_spend'])
 
+    # Recombine the dataframes and update the master lookup_cache
+    updated_customers_df = pd.concat([registered_customers_df, guests_df], ignore_index=True)
     # Update the master lookup_cache
-    lookup_cache['customers'] = customers_df.to_dict(orient='records')
+    lookup_cache['customers'] = updated_customers_df.to_dict(orient='records')
 
     # Update the orders DataFrame with the customer's final earned status using efficient .map()
     if tier_thresholds:
-        customer_tier_map = customers_df.set_index('customer_id')['loyalty_tier'].to_dict()
+        customer_tier_map = updated_customers_df.set_index('customer_id')['loyalty_tier'].to_dict()
         # Use the map to update 'customer_tier'. For any customer_id not in the map,
         # their original 'customer_tier' value is preserved by filling NaN with the original series.
         orders_df['customer_tier'] = orders_df['customer_id'].map(customer_tier_map).fillna(orders_df['customer_tier'])
 
     if clv_thresholds:
-        customer_clv_map = customers_df.set_index('customer_id')['clv_bucket'].to_dict()
+        customer_clv_map = updated_customers_df.set_index('customer_id')['clv_bucket'].to_dict()
         # Same logic for clv_bucket
         orders_df['clv_bucket'] = orders_df['customer_id'].map(customer_clv_map).fillna(orders_df['clv_bucket'])
 

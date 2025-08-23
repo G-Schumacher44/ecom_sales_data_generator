@@ -29,20 +29,6 @@ ___
 - CLI runner, Pytest test suite, and optional big/mess audit extensions
 - Designed for SQL project demos, portfolio datasets, and analytics onboarding
 
----
-
-## ✨ Key Simulation Features
-
-This generator goes beyond simple row creation by simulating a complete, interconnected e-commerce ecosystem.
-
-- **Full Sales Funnel**: Models the entire customer journey from browsing to purchase. It generates a large volume of `shopping_carts` and then "converts" a small, configurable percentage into `orders`, realistically simulating cart abandonment.
-- **Time-Aware Customer Behavior**: Simulates customer return visits over a one-year period. The likelihood of a repeat purchase is tied to `loyalty_tier`, and the time between visits is randomized, creating rich data for cohort analysis.
-- **Dynamic Returns**: The number of returns is not fixed but is generated as a percentage of total orders, ensuring that return volumes scale realistically with sales.
-- **Contextual Messiness**: The messiness engine can inject not just random noise but also contextual issues, like biased return reasons based on product category or seasonal sales spikes during holiday months.
-- **Channel-Specific Behavior**: Models distinct customer behavior based on their acquisition channel (`signup_channel`), influencing their purchase frequency, return rates, and even product category preferences.
-- **Earned Customer Value**: Customer `loyalty_tier` and `clv_bucket` are not pre-assigned but are calculated and "earned" based on their cumulative spending over time, creating a realistic progression of customer value.
-- **Long-Tail Churn & Reactivation**: The simulation now includes logic for long-term customer churn and a configurable probability for dormant customers to reactivate after a long period, adding valuable edge cases for analysis.
-
 <details>
 <summary> ⏯️ Quick Start</summary>
 
@@ -92,6 +78,22 @@ This tool doesn’t just generate data — it builds a complete relational datab
 You can see this engine in action in [SQL Stories Demo](https://github.com/G-Schumacher44/sql_stories), where I use AI-generated prompts to simulate realistic business scenarios and investigative workflows. This pairing gives me an unlimited sandbox to practice SQL storytelling, data diagnostics, and real-world problem solving — all powered by the datasets generated here.
 
 **Human-readable. YAML-driven. Designed for learning.**
+
+</details>
+
+<details>
+<summary><strong> ✨ Key Simulation Features </strong></summary>
+<br>
+
+This generator goes beyond simple row creation by simulating a complete, interconnected e-commerce ecosystem.
+
+- **Full Sales Funnel**: Models the entire customer journey from browsing to purchase. It generates a large volume of `shopping_carts` and then "converts" a small, configurable percentage into `orders`, realistically simulating cart abandonment.
+- **Time-Aware Customer Behavior**: Simulates customer return visits over a one-year period. The likelihood of a repeat purchase is tied to `loyalty_tier`, and the time between visits is randomized, creating rich data for cohort analysis.
+- **Dynamic Returns**: The number of returns is not fixed but is generated as a percentage of total orders, ensuring that return volumes scale realistically with sales.
+- **Contextual Messiness**: The messiness engine can inject not just random noise but also contextual issues, like biased return reasons based on product category or seasonal sales spikes during holiday months.
+- **Channel-Specific Behavior**: Models distinct customer behavior based on their acquisition channel (`signup_channel`), influencing their purchase frequency, return rates, and even product category preferences.
+- **Earned Customer Value**: Customer `loyalty_tier` and `clv_bucket` are not pre-assigned but are calculated and "earned" based on their cumulative spending over time, creating a realistic progression of customer value.
+- **Long-Tail Churn & Reactivation**: The simulation now includes logic for long-term customer churn and a configurable probability for dormant customers to reactivate after a long period, adding valuable edge cases for analysis.
 
 </details>
 

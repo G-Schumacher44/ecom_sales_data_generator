@@ -1,0 +1,1287 @@
+product_id,product_name,category,unit_price,inventory_quantity
+1,Compact Monitor,Electronics,52.95,169
+2,Educational Car,Toys,87.71,128
+3,Rustic Chair,Home,224.29,208
+4,  Rustic Rug  , Home ,112.13,101
+5,Educational Car,Toys,110.16,159
+6,Compact Headphones,Electronics,33.64,142
+7,Cozy Chair,Home,59.79,142
+8,Rustic Chair,Home,121.3,150
+9,Classic Guide,Books,59.34,114
+10,PORTABLE HEADPHONES,Electronics,113.15,149
+11,Modern Rug,Home,112.51,129
+12,Classic Jeans,Clothing,124.08,155
+13,Classic Memoir,Books,161.2,134
+14,Colorful Blocks,Toys,211.58,224
+15,Classic Jeans,Clothing,176.42,179
+16,Cozy Chair,Home,44.08,164
+17,Hardcover Guide,BOOKS,138.28,236
+18,Portable Speaker,Electronics,143.09,157
+19,Portable Speaker,Electronics,124.49,231
+20,Stylish Shirt,Clothing,149.19,217
+21, Stylish Jacket ,Clothing,82.13,202
+22,Compact Camera,electronics,16.21,174
+23,Hardcover Guide,Books,131.99,156
+24, Classic Memoir ,Books,196.29,156
+25,Rustic Table, Home  ,139.81,189
+26,Colorful Blocks,Toys,66.38,240
+27,Cozy Lamp,HOME,176.33,247
+28,Compact Camera,Electronics,205.32,197
+29,Classic Anthology,Books,105.51,249
+30, Interactive Puzzle  ,Toys,94.51,220
+31,Classic Anthology,Books,230.23,215
+32,  Fun Car  ,Toys,9.08,250
+33,Classic Jeans,Clothing,180.17,171
+34,Smart Speaker,Electronics,107.31,152
+35,Elegant Rug,Home,155.64,191
+36,Illustrated Anthology,Books,97.34,131
+37,Durable Jeans,Clothing,99.57,151
+38,Colorful Blocks,Toys,10.31,194
+39,Interactive Doll,  Toys ,210.69,208
+40, Interactive Doll ,Toys,123.24,201
+41,Comfortable Jacket, Clothing ,225.34,118
+42,Classic Jacket,Clothing,190.98,197
+43,Interactive Blocks,Toys,183.8,156
+44,Colorful Car,Toys,58.48,128
+45,Illustrated Novel,Books,163.6,243
+46,Wireless Camera, Electronics  ,248.1,143
+47,Hardcover Memoir,Books,184.61,103
+48,Elegant Chair,Home,177.24,184
+49, COLORFUL DOLL  ,Toys,206.17,140
+50,Classic Novel,Books,224.4,120
+51,Colorful Doll,Toys,153.89,150
+52,Fun Doll,Toys,51.66,175
+53,Classic Guide,Books,147.29,174
+54,Modern Chair,Home,191.96,184
+55,Classic Memoir,Books,99.22,122
+56,Interactive Car,Toys,230.06,105
+57,Portable Speaker,Electronics,91.93,160
+58,Modern Rug,Home,70.33,136
+59,Compact Camera,electronics,179.62,100
+60,Rustic Table,Home,132.23,193
+61,Smart Speaker,Electronics,199.5,157
+62,Modern Lamp,Home,6.81,218
+63,Educational Doll,Toys,125.64,159
+64,Smart Speaker,Electronics,12.2,233
+65,Colorful Blocks,Toys,155.32,240
+66,Educational Puzzle,  Toys ,238.26,201
+67,Hardcover Novel, Books  ,35.21,151
+68,Hardcover Novel,Books,126.42,247
+69,Smart Monitor,ELECTRONICS,121.06,152
+70,Colorful Doll, Toys ,47.77,246
+71,Smart Headphones,Electronics,125.12,140
+72,Fun Puzzle,Toys,239.9,137
+73,Portable Speaker,Electronics,21.04,110
+74,Smart Speaker,Electronics,124.86,111
+75,Durable Sweater,Clothing,70.31,120
+76,Comfortable Jacket, Clothing  ,226.38,219
+77,Rustic Rug,Home,132.34,132
+78,Illustrated Memoir,Books,195.86,152
+79,Portable Camera,Electronics,17.84,143
+80,Classic Jeans,Clothing,152.87,116
+81,Fun Car,Toys,216.76,197
+82,Hardcover Anthology,Books,114.99,205
+83,Modern Memoir, Books ,96.85,246
+84,Compact Headphones,Electronics,153.48,222
+85,Illustrated Anthology,Books,194.57,180
+86,Durable Jacket,Clothing,69.77,137
+87,Modern Lamp,Home,35.64,198
+88,Modern Lamp,Home,44.25,137
+89,Wireless Speaker, Electronics ,127.78,121
+90,Smart Monitor,Electronics,27.77,136
+91,Comfortable Shirt,Clothing,205.9,198
+92,Cozy Chair,Home,224.55,185
+93,Modern Novel,BOOKS,31.64,135
+94,Portable Headphones,Electronics,83.75,213
+95,Colorful Doll,Toys,14.65,149
+96,Hardcover Novel,Books,67.82,126
+97,Classic Jacket,Clothing,94.52,198
+98,Colorful Puzzle,Toys,65.81,199
+99,Elegant Chair,Home,179.69,213
+100,Comfortable Sweater,Clothing,231.6,191
+101,Hardcover Guide,Books,21.24,222
+102,Illustrated Anthology,Books,226.27,140
+103, Educational Blocks  ,Toys,86.85,198
+104,Wireless Headphones,Electronics,119.03,144
+105,Hardcover Memoir,Books,190.43,143
+106,Fun Blocks,Toys,179.78,240
+107,Fun Blocks,toys,50.38,189
+108,Hardcover Anthology,Books,246.51,112
+109,Elegant Table,Home,167.5,108
+110,Classic Guide,Books,62.73,193
+111,Hardcover Guide,Books,21.11,149
+112,Stylish Jacket,Clothing,215.56,174
+113,  Comfortable Jeans ,Clothing,226.55,126
+114,Colorful Blocks,Toys,87.16,122
+115,Educational Blocks,Toys,238.11,198
+116,Modern Table,Home,109.94,200
+117,Durable Jeans,Clothing,43.78,239
+118,Fun Blocks, Toys  ,222.69,130
+119,Rustic Table,Home,50.69,241
+120,Modern Table,Home,5.98,178
+121,Compact Monitor,Electronics,132.75,137
+122,  Cozy Rug ,HOME,46.62,150
+123,Modern Novel,Books,117.26,126
+124,Hardcover Memoir,Books,48.28,198
+125,Modern Anthology,Books,140.95,115
+126,Educational Car,Toys,34.3,243
+127,Fun Puzzle,Toys,158.95,178
+128,Portable Speaker,Electronics,39.72,175
+129,Illustrated Memoir,Books,12.09,137
+130,Portable Headphones,Electronics,123.36,175
+131,Hardcover Guide,Books,54.42,104
+132,Educational Doll,Toys,82.71,101
+133,Modern Memoir,Books,17.08,157
+134,Cozy Chair,Home,23.53,167
+135,Hardcover Memoir,Books,138.93,242
+136,Fun Blocks,Toys,49.95,231
+137,Classic Jeans,Clothing,92.4,157
+138, Classic Jeans  ,  Clothing  ,28.56,147
+139,Smart Headphones,Electronics,60.76,145
+140,Stylish Sweater,Clothing,193.59,166
+141,Classic Guide,Books,59.41,184
+142,Stylish Jacket,Clothing,83.19,242
+143,Durable Jeans,  Clothing ,206.41,204
+144,Modern Rug,  Home ,19.36,172
+145,Hardcover Novel,books,16.38,198
+146,Stylish Jacket,Clothing,55.99,137
+147,Portable Camera,Electronics,10.54,239
+148,Illustrated Novel,Books,47.62,106
+149, Colorful Doll  ,TOYS,18.85,163
+150, cozy lamp  ,Home,200.73,134
+151,Elegant Rug,Home,80.48,165
+152,Hardcover Novel,Books,7.76,105
+153,Smart Camera,Electronics,152.07,213
+154,comfortable jeans,Clothing,80.91,242
+155,Cozy Table,Home,109.54,235
+156,Fun Doll,Toys,174.06,181
+157,Fun Doll,Toys,197.66,113
+158,Smart Monitor,Electronics,70.67,187
+159,Fun Doll,Toys,209.19,130
+160,Interactive Doll,Toys,15.29,118
+161,Interactive Puzzle,Toys,118.19,183
+162,Colorful Puzzle,Toys,59.3,210
+163,Fun Puzzle,Toys,110.96,195
+164,Portable Speaker,Electronics,85.09,170
+165,Classic Shirt,Clothing,141.8,243
+166,  Smart Headphones ,Electronics,7.84,209
+167,Stylish Sweater,Clothing,206.55,185
+168,Durable Jeans,Clothing,234.56,178
+169,Smart Speaker,Electronics,95.1,100
+170,Illustrated Memoir,Books,126.42,131
+171,Hardcover Memoir,Books,140.14,249
+172,Educational Car,Toys,237.59,210
+173,Elegant Table,Home,204.49,233
+174,Wireless Headphones,Electronics,15.42,177
+175,smart headphones,Electronics,141.42,141
+176,Educational Car,Toys,39.75,130
+177,Portable Headphones,Electronics,235.31,193
+178,Compact Speaker,Electronics,239.16,189
+179,Cozy Lamp,  Home ,171.01,133
+180,Rustic Lamp,Home,190.11,231
+181,Wireless Speaker,Electronics,159.9,225
+182,Cozy Lamp,Home,57.31,114
+183,Illustrated Novel,Books,196.33,142
+184,Hardcover Novel, Books  ,17.3,124
+185,Rustic Chair,  Home ,210.99,151
+186,Durable Jacket,Clothing,227.6,162
+187,Portable Monitor,Electronics,96.36,111
+188,Portable Camera,Electronics,243.7,155
+189,MODERN MEMOIR,  Books ,26.56,103
+190,Wireless Speaker,Electronics,108.61,154
+191,Modern Rug,Home,124.23,103
+192,Compact Camera,Electronics,77.62,199
+193,Colorful Car,Toys,153.08,155
+194,Illustrated Novel,Books,63.83,236
+195,Educational Doll,Toys,233.24,134
+196, fun car  ,Toys,135.11,250
+197,Classic Guide,Books,203.79,120
+198,Educational Car,Toys,68.59,218
+199,Educational Blocks,Toys,221.36,165
+200, Durable Sweater ,Clothing,88.49,109
+201,Illustrated Anthology, Books  ,9.19,153
+202,Comfortable Jeans,Clothing,225.68,153
+203,Classic Memoir,Books,238.62,185
+204, Interactive Car  ,Toys,62.72,193
+205,Illustrated Anthology,Books,10.43,233
+206,Illustrated Anthology,Books,45.47,180
+207,Fun Blocks,TOYS,221.81,122
+208,Colorful Puzzle,Toys,27.39,115
+209,Modern Lamp,  Home ,234.84,226
+210,Cozy Chair,Home,171.02,248
+211,Classic Guide,Books,34.61,247
+212,Cozy Rug,Home,14.52,167
+213,Durable Jacket,Clothing,135.1,230
+214,Rustic Table,Home,104.63,156
+215,Elegant Lamp,Home,153.37,148
+216,Durable Sweater,Clothing,48.17,142
+217,Colorful Blocks, Toys ,129.36,153
+218,fun car,Toys,170.44,236
+219,Stylish Shirt,clothing,208.9,107
+220,Colorful Puzzle,Toys,174.48,154
+221,Modern Chair,Home,163.5,192
+222,  Stylish Jeans  ,Clothing,9.31,205
+223,Rustic Table,Home,92.73,151
+224,Fun Puzzle,Toys,36.09,109
+225,Interactive Blocks,Toys,248.13,105
+226,Elegant Chair, Home  ,162.2,168
+227,Classic Jeans,Clothing,21.55,147
+228,Elegant Table,Home,95.69,105
+229,Compact Speaker,Electronics,66.9,113
+230,Hardcover Memoir,Books,32.44,127
+231,Portable Headphones,Electronics,25.02,115
+232,Modern Guide,Books,66.72,199
+233,Modern Anthology,Books,188.43,245
+234,  Stylish Shirt ,Clothing,48.41,202
+235,Classic Shirt,Clothing,176.53,234
+236,Rustic Chair,Home,231.35,156
+237,Illustrated Novel,Books,66.62,125
+238,Modern Novel,Books,104.0,173
+239,Interactive Blocks,Toys,159.17,163
+240,Compact Camera,Electronics,88.23,207
+241,Stylish Sweater,Clothing,15.44,236
+242,Compact Monitor,Electronics,116.59,164
+243,Stylish Jeans,Clothing,229.27,243
+244,Colorful Car,Toys,188.92,159
+245,Fun Doll,Toys,85.79,239
+246,Durable Jeans,Clothing,34.88,223
+247,illustrated memoir,Books,241.32,170
+248,Classic Novel,Books,220.19,151
+249, Comfortable Shirt ,Clothing,89.67,173
+250,Educational Car,Toys,156.81,203
+251,Smart Speaker,Electronics,72.59,192
+252,Modern Novel,Books,19.18,173
+253,Wireless Monitor,Electronics,97.75,220
+254,Fun Blocks,Toys,249.68,205
+255,Educational Blocks,Toys,33.49,125
+256,Hardcover Novel,Books,155.54,174
+257,Fun Blocks,toys,159.02,226
+258,Interactive Car,Toys,216.02,182
+259,Classic Guide,Books,39.85,191
+260,Modern Chair,Home,21.66,242
+261,Elegant Rug,Home,217.12,104
+262,Elegant Chair,Home,234.89,200
+263,Stylish Shirt,Clothing,74.44,240
+264,Compact Headphones,Electronics,173.3,129
+265,Educational Puzzle,Toys,239.18,123
+266,  Fun Doll  ,Toys,144.51,164
+267,Interactive Doll,Toys,60.37,152
+268,Portable Speaker,Electronics,19.64,169
+269,Elegant Chair,Home,224.99,195
+270,  Portable Headphones ,Electronics,100.64,122
+271,Fun Doll,Toys,240.58,207
+272,Modern Novel,Books,91.27,197
+273,Modern Anthology,Books,147.65,147
+274,Modern Table,Home,190.54,154
+275,Compact Camera, Electronics  ,23.25,195
+276,Fun Car,Toys,236.63,175
+277,Colorful Doll,Toys,215.24,121
+278,Stylish Jacket,Clothing,159.22,158
+279,Hardcover Guide,Books,161.43,126
+280,Modern Guide,Books,48.17,155
+281,Modern Anthology,Books,229.1,234
+282,Cozy Lamp,Home,68.62,145
+283,colorful puzzle,Toys,211.12,240
+284,Durable Shirt,Clothing,130.27,143
+285,Wireless Speaker,Electronics,182.0,180
+286,  Classic Memoir  ,Books,190.8,137
+287,Compact Speaker,Electronics,166.3,137
+288,Cozy Table,Home,96.77,228
+289,Durable Sweater,Clothing,145.22,145
+290,Compact Headphones,Electronics,21.63,192
+291,Interactive Doll,Toys,210.78,119
+292,Classic Jacket,Clothing,204.06,228
+293,Fun Car,Toys,248.64,209
+294,Portable Monitor, Electronics ,177.68,210
+295,Classic Anthology,Books,166.72,100
+296,Durable Jeans,Clothing,159.98,128
+297,Compact Headphones,Electronics,88.36,102
+298,Classic Jeans,Clothing,247.07,189
+299,Colorful Blocks,Toys,119.45,152
+300,Fun Doll,Toys,39.73,239
+301,Comfortable Jacket,Clothing,10.97,188
+302,Colorful Puzzle,Toys,60.52,180
+303,Educational Car,Toys,20.01,250
+304,Colorful Puzzle,Toys,47.47,173
+305,Educational Puzzle,Toys,90.79,146
+306,Portable Monitor,Electronics,9.01,159
+307,Smart Speaker, Electronics  ,220.69,158
+308,Elegant Table,  Home  ,23.05,132
+309,Hardcover Memoir,Books,214.51,115
+310,Hardcover Guide,Books,219.43,219
+311,HARDCOVER GUIDE,Books,229.92,125
+312,Classic Sweater,Clothing,25.38,186
+313,Modern Table,Home,237.26,250
+314,Cozy Lamp,Home,38.51,226
+315,Interactive Doll,Toys,33.31,214
+316, Portable Speaker  ,Electronics,113.89,126
+317,Portable Headphones,Electronics,153.36,132
+318,Modern Table,Home,221.02,199
+319,Hardcover Novel,Books,55.31,195
+320,Educational Car,Toys,52.86,101
+321,Portable Headphones,Electronics,199.9,119
+322,Compact Monitor,Electronics,188.67,193
+323,Stylish Shirt,Clothing,163.24,166
+324,Hardcover Anthology,  Books  ,133.41,146
+325, Cozy Table  ,Home,211.17,160
+326,Cozy Rug,home,22.63,221
+327,Fun Doll,Toys,161.08,209
+328,PORTABLE SPEAKER,Electronics,17.22,147
+329,Modern Chair,Home,125.68,114
+330,Durable Shirt,Clothing,86.13,168
+331,Durable Shirt,Clothing,185.92,101
+332,Comfortable Jacket,Clothing,62.54,190
+333,Illustrated Anthology,Books,86.26,134
+334,PORTABLE MONITOR,Electronics,163.22,199
+335,Comfortable Jeans,Clothing,156.24,230
+336,Modern Memoir,Books,238.4,134
+337, Illustrated Anthology ,  Books ,151.36,168
+338,Durable Jeans,Clothing,181.16,189
+339,Portable Monitor,Electronics,69.66,181
+340,Compact Monitor,Electronics,81.12,122
+341,Classic Shirt,Clothing,212.19,194
+342,Elegant Table, Home ,124.93,230
+343,Educational Doll,Toys,248.48,240
+344,Wireless Camera,Electronics,236.27,136
+345,Hardcover Novel,Books,76.12,206
+346, Illustrated Novel ,books,212.92,209
+347,COZY LAMP,Home,44.15,139
+348,Illustrated Memoir,Books,168.57,189
+349, Modern Lamp  ,Home,127.52,101
+350,Elegant Table,Home,68.91,134
+351,Educational Car,Toys,189.01,177
+352,Stylish Shirt,Clothing,199.49,115
+353,Compact Camera, Electronics  ,130.57,141
+354,Stylish Jeans,Clothing,226.73,161
+355,Compact Headphones,Electronics,42.34,124
+356, Interactive Doll ,Toys,71.69,184
+357,Portable Headphones,Electronics,68.11,221
+358,Hardcover Novel,  Books ,25.15,237
+359,Comfortable Jeans,Clothing,154.99,175
+360,Rustic Lamp,Home,63.42,210
+361,Stylish Sweater,Clothing,86.31,135
+362,Illustrated Guide,Books,82.65,112
+363,Hardcover Memoir,Books,81.22,150
+364,Comfortable Sweater,Clothing,102.19,165
+365,Rustic Lamp,Home,51.24,239
+366,Smart Speaker,Electronics,165.0,176
+367,ILLUSTRATED MEMOIR,Books,244.68,225
+368,Compact Speaker,Electronics,104.73,222
+369,Modern Lamp,Home,116.98,232
+370,Rustic Table,home,84.76,152
+371,Stylish Sweater,Clothing,134.07,174
+372,Compact Camera,Electronics,19.82,146
+373,Compact Camera,Electronics,91.63,128
+374,Rustic Rug,Home,84.66,119
+375,Classic Shirt,Clothing,141.92,107
+376,Modern Guide, Books  ,136.05,189
+377,Modern Table,Home,70.19,172
+378,Stylish Jacket,Clothing,107.93,119
+379,Elegant Table,  HOME  ,233.13,235
+380,Illustrated Guide,Books,42.53,148
+381,Classic Jacket,Clothing,147.99,242
+382,Wireless Headphones,Electronics,212.81,237
+383,Wireless Speaker,  Electronics ,59.06,197
+384,Classic Sweater,Clothing,52.17,107
+385,Classic Jacket,Clothing,91.45,166
+386, Comfortable Shirt , Clothing  ,84.33,212
+387,Classic Anthology,Books,180.18,171
+388,Durable Sweater,Clothing,87.55,150
+389,Illustrated Novel,Books,62.67,178
+390,Compact Camera,  Electronics ,233.18,139
+391,Durable Jeans,clothing,228.42,217
+392,Classic Sweater,Clothing,30.12,142
+393,Classic Jacket,Clothing,45.49,204
+394,Wireless Camera,Electronics,104.77,198
+395,Illustrated Memoir,Books,160.97,183
+396,Interactive Blocks,  Toys  ,235.51,175
+397,Wireless Headphones,Electronics,160.45,163
+398,Durable Sweater,Clothing,34.32,193
+399,Colorful Puzzle,Toys,115.89,225
+400,Comfortable Sweater,Clothing,57.66,248
+401,Rustic Table,Home,225.71,247
+402,Illustrated Anthology,Books,44.22,113
+403,Cozy Table, Home ,129.39,211
+404,Stylish Shirt,Clothing,41.9,110
+405,Elegant Chair,Home,178.0,204
+406,Classic Anthology, Books  ,220.29,202
+407,Educational Puzzle,Toys,10.27,189
+408,Illustrated Novel,Books,79.12,199
+409,Durable Jacket,Clothing,54.0,240
+410,Illustrated Novel,Books,99.98,229
+411,Classic Anthology, Books  ,111.71,167
+412,Illustrated Memoir,Books,174.18,169
+413,Colorful Blocks,Toys,19.42,166
+414,Wireless Headphones,Electronics,57.43,103
+415,Cozy Lamp,Home,40.44,191
+416,Durable Jacket,Clothing,245.24,114
+417,Modern Table,Home,182.94,188
+418,Wireless Headphones,Electronics,235.06,129
+419,Smart Speaker,Electronics,177.54,167
+420,Rustic Table,Home,47.51,151
+421,  Modern Memoir ,Books,180.95,204
+422,Fun Puzzle,Toys,106.84,216
+423,Modern Novel,Books,163.6,122
+424,Interactive Doll,Toys,67.25,216
+425,Educational Doll,Toys,79.3,214
+426,  Stylish Jeans  ,Clothing,150.73,215
+427,Stylish Sweater,Clothing,107.69,175
+428,Smart Speaker,Electronics,220.34,185
+429,Classic Novel,Books,221.53,229
+430,Educational Puzzle,Toys,223.97,189
+431,Modern Novel,Books,132.23,241
+432,  Hardcover Novel ,Books,117.14,229
+433,Modern Memoir,Books,208.2,186
+434,Smart Monitor,electronics,149.31,142
+435,Illustrated Anthology,Books,157.61,161
+436,Durable Jacket,Clothing,45.28,136
+437,Illustrated Anthology,Books,220.3,139
+438,Rustic Rug,Home,127.79,142
+439,Smart Monitor,electronics,215.73,234
+440,  Fun Blocks ,Toys,13.19,131
+441,Cozy Rug,Home,14.45,203
+442,Durable Jacket,Clothing,194.72,232
+443,COMFORTABLE JACKET,Clothing,211.62,192
+444,Comfortable Shirt,Clothing,228.1,105
+445,Modern Lamp,Home,24.07,114
+446,Classic Jeans, Clothing ,161.35,169
+447,Smart Speaker,Electronics,73.24,139
+448,Educational Puzzle,Toys,169.22,101
+449,Compact Speaker,Electronics,249.87,245
+450,Classic Jacket,Clothing,233.08,109
+451,Educational Puzzle,Toys,90.72,229
+452,Colorful Blocks,toys,219.66,191
+453,Hardcover Guide,Books,31.04,207
+454,Fun Doll,Toys,92.61,219
+455,Classic Sweater,Clothing,42.68,150
+456,Smart Camera,  Electronics ,124.38,159
+457,Portable Speaker,Electronics,176.69,137
+458,Cozy Rug,Home,101.84,227
+459,Portable Headphones,Electronics,158.38,141
+460,Wireless Speaker,Electronics,83.73,148
+461,Colorful Puzzle,Toys,91.54,222
+462,Educational Car,Toys,156.7,144
+463, Durable Sweater  ,Clothing,222.97,129
+464,Modern Novel,Books,221.7,215
+465,Cozy Rug,Home,239.96,173
+466,Wireless Camera,Electronics,44.14,122
+467,Compact Speaker,Electronics,11.09,184
+468,Comfortable Sweater,Clothing,51.86,103
+469,Smart Camera,Electronics,226.02,222
+470,Stylish Jeans,Clothing,65.93,157
+471,Educational Car,Toys,138.34,193
+472,Comfortable Shirt,Clothing,38.81,183
+473,Classic Anthology,Books,176.87,244
+474,Classic Guide,Books,43.62,250
+475,Comfortable Sweater,Clothing,178.44,142
+476,Modern Memoir,Books,226.38,244
+477,Modern Lamp,Home,38.84,226
+478,Modern Memoir,Books,14.65,239
+479,Cozy Lamp,Home,14.54,249
+480,Stylish Jeans,Clothing,77.69,199
+481,Hardcover Novel,  Books ,91.49,199
+482,Classic Shirt,Clothing,227.88,194
+483,Wireless Monitor,Electronics,27.94,184
+484,Cozy Table,Home,131.19,232
+485,Educational Car,Toys,183.29,209
+486,  Illustrated Anthology  ,Books,122.04,195
+487,Educational Car,Toys,45.81,160
+488,Illustrated Memoir,Books,15.66,158
+489,Hardcover Guide,Books,232.52,173
+490,Stylish Sweater,Clothing,6.23,165
+491,Cozy Rug,Home,63.57,221
+492,durable sweater, Clothing  ,248.9,136
+493,Elegant Table,Home,99.37,136
+494,Educational Car,Toys,246.19,134
+495,Educational Doll,Toys,191.52,154
+496,Rustic Table,  Home ,241.59,219
+497,Smart Speaker,Electronics,228.2,109
+498,Comfortable Sweater,Clothing,43.73,155
+499,Colorful Blocks,Toys,42.85,159
+500,Elegant Rug,Home,26.05,123
+501,Portable Camera,Electronics,6.0,242
+502,Portable Speaker,Electronics,27.72,238
+503,Colorful Blocks,Toys,47.23,173
+504,Modern Table,Home,134.11,175
+505,Classic Jeans,Clothing,161.84,119
+506,Elegant Lamp,Home,77.53,160
+507,Smart Camera,Electronics,161.06,113
+508,Fun Blocks,Toys,177.93,249
+509,Classic Memoir,Books,43.73,109
+510,Fun Puzzle,Toys,62.67,170
+511,Educational Doll,Toys,168.81,121
+512,Hardcover Guide,Books,80.52,126
+513,Modern Memoir,books,31.78,196
+514,Rustic Lamp,Home,174.76,214
+515,Modern Rug,Home,122.85,146
+516,Hardcover Anthology,Books,111.87,190
+517,Elegant Table,HOME,45.93,102
+518,cozy table,  Home  ,182.82,169
+519,Educational Car,Toys,56.85,165
+520,Interactive Blocks,Toys,23.07,138
+521,Portable Speaker,Electronics,23.67,215
+522,  Colorful Blocks  ,Toys,212.49,212
+523,Stylish Shirt,Clothing,5.76,188
+524,Durable Sweater,Clothing,22.21,213
+525, Fun Car  ,Toys,33.99,122
+526,Fun Puzzle,Toys,205.75,135
+527,Interactive Blocks,Toys,86.1,122
+528,PORTABLE HEADPHONES,Electronics,83.35,247
+529,Compact Camera,Electronics,230.59,187
+530,Wireless Speaker,Electronics,79.71,104
+531,Comfortable Jacket,Clothing,203.36,185
+532,Stylish Sweater,Clothing,208.1,221
+533,Educational Blocks,Toys,114.48,245
+534,Classic Novel,Books,44.12,147
+535,Durable Jeans,Clothing,37.47,149
+536,Rustic Table,Home,11.54,184
+537,Modern Chair,Home,70.16,219
+538,Classic Sweater,Clothing,39.29,136
+539,Elegant Chair,Home,5.16,194
+540,Durable Jeans,Clothing,240.4,119
+541,Classic Novel,Books,78.09,136
+542,Illustrated Guide, Books  ,112.41,105
+543,Interactive Puzzle,Toys,106.51,241
+544,Rustic Chair,Home,223.94,213
+545, Hardcover Memoir ,Books,45.13,150
+546,Compact Speaker,Electronics,9.39,242
+547,Durable Jacket,  Clothing ,219.26,126
+548,compact speaker,Electronics,62.53,163
+549,Classic Shirt,Clothing,22.53,150
+550,Hardcover Memoir,Books,152.2,236
+551,Portable Monitor,Electronics,23.43,153
+552,Durable Shirt,Clothing,240.47,141
+553,Smart Camera,Electronics,93.37,130
+554,Classic Sweater,Clothing,39.7,228
+555,Classic Memoir,Books,138.85,209
+556,Portable Camera, Electronics  ,197.59,115
+557,Cozy Chair,Home,22.2,190
+558,Cozy Chair,Home,114.71,133
+559,Rustic Table,Home,122.37,213
+560,Smart Headphones,Electronics,161.19,172
+561,Durable Shirt,Clothing,18.1,149
+562,Educational Blocks,Toys,246.96,245
+563,Compact Headphones,Electronics,239.03,109
+564,Colorful Puzzle,Toys,28.47,207
+565,Comfortable Sweater,Clothing,228.49,215
+566,Smart Monitor,Electronics,137.49,103
+567,Rustic Table,Home,139.64,166
+568,Durable Jacket,Clothing,150.05,221
+569,Comfortable Jacket,Clothing,203.16,102
+570,Modern Novel,Books,127.27,240
+571,Modern Novel,Books,204.86,112
+572,Modern Memoir,Books,207.35,160
+573,Portable Headphones,Electronics,175.08,177
+574,Compact Headphones,Electronics,117.14,121
+575,Durable Jacket,Clothing,43.06,166
+576,Fun Blocks,Toys,233.32,129
+577,Modern Novel,Books,201.86,228
+578,Classic Guide,Books,225.91,139
+579,Rustic Rug,Home,54.59,189
+580,Colorful Blocks,Toys,218.0,146
+581,Classic Novel,Books,206.01,232
+582,Hardcover Guide,Books,139.85,113
+583,elegant chair,Home,9.86,163
+584,Portable Headphones,Electronics,193.85,250
+585,Educational Puzzle,Toys,212.47,201
+586,Wireless Speaker,Electronics,205.92,104
+587,Hardcover Memoir,Books,220.3,168
+588,Portable Headphones,Electronics,148.83,176
+589,Classic Sweater,Clothing,65.76,103
+590,Interactive Blocks,Toys,88.5,208
+591,Hardcover Novel,  Books ,80.45,141
+592,Hardcover Anthology,Books,14.59,188
+593,Modern Guide,Books,72.06,186
+594,Stylish Shirt,Clothing,209.16,187
+595,Durable Jacket,Clothing,7.7,144
+596,Cozy Chair,Home,63.35,248
+597,Classic Shirt,Clothing,136.97,148
+598,Interactive Doll,Toys,119.47,127
+599,Wireless Headphones,Electronics,244.53,103
+600,Rustic Chair,Home,170.72,186
+601,Portable Headphones,Electronics,210.77,227
+602,Fun Puzzle,Toys,121.94,237
+603,Comfortable Jeans,Clothing,241.58,194
+604,Educational Puzzle,Toys,116.75,123
+605,Classic Shirt,Clothing,81.11,104
+606,Smart Monitor,Electronics,170.91,154
+607,Rustic Lamp,Home,190.77,152
+608,INTERACTIVE CAR,Toys,28.34,228
+609,Modern Lamp,Home,133.99,203
+610,Smart Camera,  Electronics  ,16.31,135
+611,Elegant Rug,Home,169.96,127
+612,Classic Anthology,Books,111.25,102
+613,Durable Jacket,Clothing,220.67,187
+614,Hardcover Memoir, Books ,159.55,200
+615,  Interactive Car  ,Toys,207.56,215
+616,Modern Table,Home,149.77,234
+617,Illustrated Anthology,Books,180.48,104
+618,Educational Blocks,Toys,121.85,111
+619,Elegant Chair,Home,31.77,171
+620,Elegant Chair,Home,50.09,249
+621,Stylish Sweater,Clothing,238.54,222
+622,Rustic Rug,Home,137.8,228
+623, Colorful Puzzle ,TOYS,54.64,184
+624,Rustic Table,Home,49.23,162
+625,classic novel,Books,193.88,192
+626,Modern Guide,Books,120.86,107
+627,Stylish Jeans,Clothing,19.91,249
+628,Portable Speaker,Electronics,198.86,220
+629,Wireless Headphones,Electronics,76.42,150
+630, Stylish Jacket ,Clothing,23.36,118
+631,  Compact Camera ,Electronics,235.11,107
+632,Rustic Rug,Home,210.05,104
+633,Colorful Car,Toys,85.2,191
+634,Portable Speaker,Electronics,201.84,112
+635,Modern Novel,Books,131.84,245
+636,Interactive Car,Toys,21.89,241
+637,Colorful Blocks,Toys,69.82,209
+638,Wireless Camera, Electronics  ,80.07,214
+639,Elegant Lamp,Home,51.79,158
+640,Hardcover Memoir,Books,96.71,179
+641,Hardcover Anthology,Books,145.56,219
+642,Compact Headphones,Electronics,164.37,129
+643,Modern Novel,Books,22.81,120
+644,Rustic Table,Home,233.39,174
+645,Illustrated Memoir,Books,148.16,225
+646,Comfortable Shirt, clothing ,215.05,171
+647,Wireless Headphones,Electronics,38.22,123
+648,Classic Shirt,Clothing,14.11,129
+649,Compact Headphones,Electronics,164.69,224
+650,Stylish Sweater,Clothing,73.55,141
+651,Modern Novel, books ,115.49,212
+652,Classic Sweater,Clothing,10.63,100
+653, Durable Sweater  , Clothing ,178.84,159
+654, Colorful Doll ,Toys,246.1,113
+655,Modern Lamp,Home,74.85,236
+656,classic memoir,Books,44.16,204
+657,Educational Doll,Toys,79.64,191
+658,Educational Car,Toys,62.61,206
+659,Wireless Speaker,Electronics,46.56,144
+660,Durable Jeans,Clothing,203.31,240
+661,Wireless Headphones, Electronics ,146.0,201
+662,Stylish Jeans,Clothing,131.76,234
+663,Durable Shirt,Clothing,133.18,102
+664,Illustrated Memoir,Books,31.52,116
+665,Durable Jeans,Clothing,138.02,148
+666,Hardcover Guide,Books,133.01,174
+667,Modern Novel,Books,41.38,182
+668,Classic Jacket,Clothing,170.59,237
+669,Fun Blocks,Toys,12.03,221
+670,Modern Chair,Home,172.67,136
+671,Educational Puzzle,Toys,149.15,192
+672,CLASSIC SHIRT,clothing,205.79,231
+673,Educational Doll,Toys,213.45,130
+674,  Classic Guide  ,Books,158.29,217
+675,Cozy Chair,Home,238.61,201
+676,Colorful Puzzle,Toys,66.33,115
+677,Classic Guide,Books,195.42,113
+678, Elegant Chair  ,Home,167.36,158
+679,Illustrated Guide,books,85.52,234
+680,Durable Jacket,Clothing,102.75,236
+681,Compact Speaker,Electronics,17.14,171
+682,Classic Jacket,Clothing,212.06,153
+683,Modern Novel,Books,147.08,171
+684,Portable Speaker,Electronics,206.55,241
+685,Fun Car,Toys,32.67,141
+686,Fun Blocks,Toys,89.57,143
+687,Comfortable Sweater,Clothing,92.28,232
+688,Comfortable Shirt,Clothing,114.01,108
+689,Durable Shirt,Clothing,118.54,220
+690,Colorful Blocks,Toys,86.78,161
+691,Cozy Chair,Home,108.99,174
+692, Rustic Lamp ,Home,143.73,191
+693,Comfortable Jacket,Clothing,70.64,250
+694,Educational Puzzle,Toys,11.06,110
+695,Durable Jeans,Clothing,104.92,229
+696,Modern Table,  Home  ,242.47,180
+697,Illustrated Anthology,Books,107.71,111
+698,Educational Puzzle,Toys,155.78,147
+699, Smart Headphones ,Electronics,87.82,137
+700,Cozy Lamp,Home,55.56,183
+701,Stylish Sweater,Clothing,156.23,132
+702,  Hardcover Anthology ,Books,195.34,218
+703,Comfortable Jacket,Clothing,68.71,150
+704,Colorful Doll,Toys,84.4,130
+705,Elegant Chair,Home,177.86,208
+706,Modern Chair,Home,196.26,109
+707,Elegant Chair,Home,174.72,240
+708,Educational Blocks,  Toys  ,105.22,123
+709,Rustic Chair,Home,97.28,109
+710,Smart Monitor,  Electronics  ,211.39,110
+711,Classic Novel,Books,90.03,241
+712,Wireless Headphones,Electronics,74.45,231
+713,Comfortable Sweater,Clothing,235.67,138
+714,Classic Jacket,  Clothing  ,147.18,227
+715, wireless monitor ,Electronics,167.74,149
+716,Educational Doll,Toys,151.93,197
+717,Educational Blocks,Toys,173.02,199
+718,Modern Table,Home,213.33,109
+719,Classic Novel,Books,161.71,213
+720,Colorful Blocks,Toys,59.75,115
+721,Cozy Chair,  Home  ,83.23,190
+722,Compact Headphones,Electronics,162.82,128
+723,Portable Monitor, Electronics ,172.56,135
+724,Colorful Car,Toys,193.48,249
+725,Fun Car,Toys,142.45,218
+726,Fun Blocks,Toys,67.98,142
+727,Fun Doll,Toys,240.95,168
+728,Hardcover Anthology,Books,180.86,171
+729,Elegant Rug,Home,191.26,144
+730,Portable Monitor,Electronics,208.01,242
+731,Classic Guide,Books,248.28,166
+732,Educational Car,Toys,128.78,123
+733,Hardcover Memoir,Books,198.57,163
+734,modern memoir,Books,223.2,144
+735, Wireless Camera ,Electronics,164.99,148
+736,Wireless Headphones,Electronics,18.78,106
+737,Modern Rug,Home,224.25,182
+738,Smart Speaker,  Electronics  ,31.82,128
+739,Modern Rug,Home,22.44,183
+740,Durable Jeans,Clothing,78.01,229
+741,Smart Camera,Electronics,161.6,151
+742,Compact Headphones,Electronics,89.62,249
+743,Smart Speaker,Electronics,7.15,216
+744,Smart Camera,electronics,51.64,223
+745, Rustic Table  ,Home,35.05,232
+746,Cozy Lamp,  Home  ,95.5,192
+747,Classic Memoir,Books,151.53,246
+748,Cozy Rug,Home,140.04,210
+749,Smart Speaker,electronics,73.93,121
+750,Smart Headphones,Electronics,95.67,167
+751,Modern Memoir,  Books  ,201.97,197
+752,Portable Headphones,ELECTRONICS,79.74,170
+753,Smart Monitor,Electronics,222.24,249
+754,Illustrated Guide,Books,172.49,128
+755,Interactive Blocks,Toys,76.58,188
+756,Portable Speaker,Electronics,81.14,181
+757,Cozy Lamp, Home  ,221.46,109
+758,Colorful Doll,toys,17.41,111
+759,Interactive Car,Toys,25.7,132
+760,INTERACTIVE PUZZLE,toys,170.7,206
+761,Rustic Table, Home ,59.49,140
+762,Elegant Chair,Home,228.62,209
+763,  classic anthology  ,Books,178.87,245
+764,Smart Speaker,Electronics,52.58,180
+765,Compact Monitor,Electronics,128.04,185
+766,Interactive Doll,Toys,18.45,188
+767,Educational Car,Toys,54.88,174
+768,Fun Car,Toys,72.3,235
+769, Classic Shirt ,Clothing,222.46,246
+770,Classic Jeans,Clothing,99.25,178
+771,Rustic Rug,Home,130.04,102
+772,Smart Camera,Electronics,174.13,139
+773,Elegant Lamp,Home,45.65,170
+774,Wireless Monitor,electronics,241.39,166
+775,Hardcover Guide,Books,82.15,150
+776,Stylish Jacket, CLOTHING ,218.98,165
+777,Classic Jeans,  Clothing  ,106.45,176
+778,Comfortable Sweater,Clothing,147.51,199
+779,Fun Puzzle,TOYS,208.65,107
+780,Educational Blocks,Toys,197.93,199
+781,STYLISH JACKET,Clothing,13.78,111
+782,  Smart Camera  ,Electronics,126.19,146
+783,Comfortable Sweater,Clothing,209.94,178
+784,Compact Speaker,Electronics,145.01,125
+785,DURABLE SHIRT,Clothing,85.4,144
+786,Modern Anthology,Books,136.94,220
+787,Portable Camera,Electronics,151.76,220
+788,Elegant Table,home,159.72,237
+789,Rustic Chair,Home,224.28,138
+790,Cozy Lamp, Home ,100.49,167
+791,Illustrated Anthology,Books,148.67,186
+792,Classic Jeans,Clothing,228.76,149
+793,  Classic Sweater ,Clothing,85.25,191
+794,Interactive Blocks,Toys,181.51,160
+795,Colorful Car,Toys,83.53,226
+796,Modern Chair,Home,22.12,124
+797,Hardcover Novel,Books,211.53,247
+798, Elegant Lamp  ,Home,42.68,171
+799,Illustrated Novel,Books,153.35,209
+800,Smart Camera,Electronics,246.33,180
+801,Fun Puzzle,  Toys ,98.17,148
+802,Illustrated Novel, Books ,107.82,206
+803,Modern Rug,Home,147.1,216
+804,Rustic Table,  Home  ,158.65,181
+805,Modern Anthology,  Books  ,22.33,196
+806,Cozy Rug,HOME,160.23,192
+807,Portable Monitor,Electronics,73.3,137
+808,Comfortable Jeans, CLOTHING ,119.96,115
+809,Interactive Blocks,Toys,22.95,205
+810,Comfortable Shirt,Clothing,247.74,231
+811,Interactive Puzzle,Toys,159.43,160
+812,Durable Jacket,Clothing,142.39,190
+813,Colorful Puzzle,Toys,145.04,198
+814,Colorful Puzzle, Toys  ,224.86,129
+815,Modern Novel,Books,41.81,112
+816,Rustic Table,home,44.09,117
+817,Wireless Camera,Electronics,209.86,224
+818,Wireless Headphones,Electronics,60.59,169
+819,Hardcover Anthology,Books,73.76,215
+820,Fun Doll,Toys,206.32,163
+821,  Modern Lamp ,Home,33.6,118
+822,Fun Car,Toys,244.8,136
+823,Hardcover Memoir,Books,148.96,202
+824,Educational Car,TOYS,104.16,182
+825,Classic Jacket,Clothing,123.86,137
+826,Fun Doll,Toys,42.55,201
+827,Fun Doll,Toys,203.88,112
+828,Classic Jeans,Clothing,31.06,105
+829,Classic Jacket,Clothing,56.36,110
+830,Rustic Lamp,Home,83.16,184
+831,Colorful Puzzle,  toys ,223.93,234
+832,Wireless Monitor,Electronics,67.73,143
+833,Comfortable Jacket,  Clothing ,11.08,133
+834,Durable Sweater,Clothing,12.35,170
+835,Illustrated Novel,books,206.72,216
+836,Interactive Puzzle,Toys,80.93,184
+837,Elegant Chair,Home,176.89,179
+838,educational doll,Toys,21.41,185
+839,Durable Sweater,Clothing,184.78,246
+840,Cozy Rug, Home ,162.09,141
+841,Illustrated Memoir,Books,203.81,224
+842,Fun Doll,Toys,150.55,161
+843,Classic Memoir,Books,237.73,239
+844,Modern Anthology,Books,219.3,137
+845,Colorful Car,Toys,25.04,240
+846,Classic Guide,Books,151.75,242
+847,Modern Anthology,Books,122.82,208
+848,Modern Novel,BOOKS,117.92,243
+849,Elegant Chair,home,209.25,231
+850, Colorful Puzzle ,Toys,154.81,161
+851,Modern Chair,Home,226.53,236
+852,Wireless Monitor,Electronics,51.59,186
+853,Colorful Car,Toys,69.87,180
+854,DURABLE SWEATER,clothing,78.72,223
+855,Elegant Rug,Home,39.02,185
+856,Hardcover Anthology,Books,129.54,155
+857,  Comfortable Jeans  ,Clothing,111.7,137
+858,Comfortable Shirt,Clothing,147.8,191
+859,Elegant Table,  Home ,196.23,185
+860,Stylish Shirt,Clothing,175.92,218
+861,Durable Shirt,Clothing,37.44,243
+862,Illustrated Novel,Books,9.6,226
+863,Classic Jeans,Clothing,67.88,131
+864,Classic Shirt,Clothing,55.17,237
+865,Educational Doll,Toys,120.74,155
+866,Wireless Camera,Electronics,74.49,161
+867,Fun Blocks,Toys,201.84,122
+868,CLASSIC SWEATER,Clothing,181.72,201
+869,Illustrated Anthology,Books,77.25,122
+870,Modern Novel,Books,140.58,172
+871,Comfortable Sweater,Clothing,234.42,119
+872,Cozy Chair,Home,92.23,219
+873,Portable Speaker,Electronics,87.79,105
+874,Portable Speaker,Electronics,139.62,106
+875,Modern Novel, Books ,42.46,120
+876,Comfortable Sweater,Clothing,234.18,102
+877,CLASSIC ANTHOLOGY,Books,153.45,195
+878,Interactive Blocks,Toys,40.48,231
+879,Modern Lamp,Home,220.35,245
+880,Modern Rug,Home,217.47,167
+881,Modern Lamp,Home,229.96,164
+882,Wireless Camera,Electronics,179.7,126
+883,  Rustic Lamp  ,Home,130.56,139
+884,Durable Jeans,Clothing,236.08,206
+885,Cozy Chair,Home,26.63,196
+886,Modern Guide,Books,244.24,184
+887,Hardcover Anthology,Books,245.5,226
+888,Modern Novel,Books,23.54,110
+889,Portable Speaker,ELECTRONICS,41.05,161
+890,Compact Headphones,Electronics,78.43,241
+891,Wireless Camera,Electronics,95.12,104
+892,Elegant Chair,Home,62.3,186
+893,Wireless Speaker,Electronics,232.04,207
+894,Portable Speaker,electronics,205.11,101
+895,Modern Memoir,books,116.12,165
+896,Hardcover Novel, Books  ,189.13,179
+897,Colorful Puzzle,Toys,65.77,201
+898,Interactive Car,Toys,225.64,194
+899,Wireless Headphones,Electronics,162.93,211
+900,Fun Blocks,Toys,121.18,179
+901,Stylish Shirt, Clothing  ,64.3,135
+902,Rustic Chair,Home,172.84,112
+903,Compact Camera,Electronics,181.63,248
+904,MODERN TABLE,  Home  ,166.89,143
+905,Durable Sweater,Clothing,245.23,221
+906,Cozy Chair,Home,37.51,169
+907,Smart Headphones,Electronics,86.48,171
+908,Wireless Speaker,Electronics,112.33,246
+909,Colorful Doll,TOYS,22.28,143
+910,Fun Doll,Toys,147.87,240
+911, classic memoir ,Books,23.7,243
+912,Classic Guide,Books,146.74,125
+913,Educational Puzzle,Toys,11.58,169
+914,Comfortable Sweater,Clothing,49.93,166
+915,Smart Speaker,Electronics,48.61,197
+916,Elegant Table,Home,248.63,226
+917,Hardcover Guide,Books,145.06,244
+918,Illustrated Novel,Books,224.2,198
+919,Wireless Monitor,Electronics,249.6,187
+920, Cozy Lamp  ,Home,86.28,111
+921,Portable Monitor,Electronics,61.98,226
+922,Rustic Chair,Home,191.7,208
+923,Modern Novel,  Books ,122.15,113
+924,Classic Sweater,Clothing,104.73,222
+925,Educational Puzzle,Toys,237.85,131
+926,Hardcover Guide,Books,154.91,212
+927,Wireless Camera,Electronics,186.44,245
+928,Illustrated Memoir,Books,219.65,216
+929,Educational Blocks,Toys,220.43,231
+930,Durable Shirt,  Clothing  ,42.85,182
+931,Durable Sweater,Clothing,230.43,250
+932,Classic Sweater,Clothing,191.21,164
+933,PORTABLE HEADPHONES,Electronics,185.93,219
+934,Fun Blocks,Toys,165.41,211
+935,Illustrated Memoir,Books,116.53,110
+936,Cozy Lamp,Home,37.62,169
+937,Elegant Chair,Home,7.49,203
+938,Rustic Chair,Home,101.18,209
+939,  Comfortable Shirt ,Clothing,192.44,134
+940,Colorful Puzzle,Toys,77.78,214
+941,CLASSIC JEANS, Clothing  ,131.67,196
+942,Modern Lamp,Home,123.95,148
+943,Elegant Chair,home,221.31,199
+944,Classic Jeans, Clothing  ,166.11,219
+945,Colorful Car,Toys,193.44,216
+946,Smart Speaker,  ELECTRONICS  ,118.46,132
+947,Cozy Lamp,Home,103.47,170
+948,Wireless Monitor,Electronics,92.6,217
+949, Interactive Car ,Toys,13.67,105
+950,Classic Sweater,Clothing,221.24,250
+951,Classic Anthology,Books,130.62,235
+952,Modern Chair,Home,199.23,249
+953,Modern Lamp,Home,46.21,133
+954,Modern Memoir,Books,241.53,108
+955,Classic Memoir,Books,178.07,223
+956,Modern Chair,Home,21.65,129
+957, Colorful Puzzle  ,Toys,87.92,193
+958,Wireless Camera,Electronics,211.13,146
+959,Hardcover Anthology,Books,217.45,145
+960,Stylish Jacket,Clothing,66.11,200
+961,Portable Headphones,Electronics,225.23,200
+962,Rustic Chair,Home,206.66,101
+963,Classic Anthology,Books,91.75,187
+964,Portable Speaker,ELECTRONICS,187.1,227
+965,Comfortable Sweater,Clothing,8.0,158
+966,Colorful Car,Toys,229.16,121
+967,Cozy Table,  Home ,157.84,184
+968,Educational Puzzle,Toys,217.05,206
+969,Portable Speaker,  Electronics ,92.44,150
+970,Stylish Shirt,Clothing,162.81,246
+971, Fun Blocks  ,Toys,235.57,197
+972,Illustrated Anthology,books,130.27,202
+973,Elegant Rug,Home,82.35,171
+974,Rustic Rug,Home,191.31,118
+975,Interactive Blocks,Toys,6.89,181
+976,Wireless Camera,Electronics,149.95,126
+977,Colorful Puzzle,Toys,222.52,175
+978,Wireless Camera,Electronics,175.31,203
+979,Modern Guide,Books,157.27,225
+980,INTERACTIVE BLOCKS, Toys  ,43.56,141
+981,Portable Monitor,Electronics,58.05,152
+982,Rustic Lamp,Home,222.87,195
+983,Fun Doll,Toys,11.74,100
+984,Compact Headphones,Electronics,161.43,194
+985,Smart Speaker,Electronics,169.98,165
+986,portable headphones,Electronics,184.37,164
+987,Durable Jacket,Clothing,8.75,159
+988,Elegant Rug, Home  ,146.62,160
+989,Illustrated Memoir,Books,64.29,126
+990,Classic Sweater,Clothing,80.46,239
+991,Colorful Blocks,Toys,40.48,189
+992,Cozy Table,Home,150.07,196
+993,Colorful Car,Toys,119.82,164
+994,Elegant Rug,home,147.27,222
+995,Smart Camera,Electronics,135.52,213
+996,Classic Anthology,Books,183.48,103
+997,Portable Headphones,Electronics,199.74,210
+998,Wireless Camera,Electronics,98.99,153
+999,Smart Camera,  Electronics ,48.58,148
+1000,Compact Speaker,Electronics,86.42,199
+1001,Fun Doll,Toys,27.34,171
+1002,Wireless Speaker,Electronics,176.53,242
+1003,Interactive Doll,Toys,7.05,105
+1004,Colorful Blocks,Toys,128.12,207
+1005,Illustrated Novel,Books,45.98,206
+1006,Interactive Doll,Toys,9.04,157
+1007,Rustic Rug,Home,103.13,231
+1008, Cozy Lamp  ,Home,71.22,100
+1009,Modern Rug,Home,220.25,209
+1010,Stylish Jacket,Clothing,55.24,192
+1011,Wireless Headphones,Electronics,90.31,233
+1012,Educational Blocks,Toys,157.53,212
+1013,Stylish Jeans,CLOTHING,221.53,183
+1014,Comfortable Jeans,Clothing,164.44,197
+1015,fun car,Toys,112.58,209
+1016,Wireless Camera,Electronics,176.67,187
+1017,Modern Guide,Books,7.98,223
+1018,Rustic Rug,Home,248.18,148
+1019,Comfortable Jeans,Clothing,171.34,132
+1020,Illustrated Novel,  Books ,100.33,120
+1021,Compact Monitor,Electronics,52.13,132
+1022,Cozy Rug,Home,116.18,186
+1023,Comfortable Shirt, Clothing  ,165.96,207
+1024,Fun Puzzle,Toys,224.19,180
+1025,Classic Shirt,Clothing,203.37,247
+1026,Hardcover Memoir,  Books  ,210.67,154
+1027,Illustrated Memoir,Books,221.22,139
+1028,Smart Speaker,Electronics,32.42,138
+1029,EDUCATIONAL PUZZLE,Toys,88.14,235
+1030,  Classic Anthology ,Books,98.36,104
+1031,Comfortable Shirt,  Clothing  ,100.18,124
+1032,cozy table,Home,200.11,233
+1033,  Interactive Doll ,  Toys ,51.08,179
+1034,Smart Monitor, Electronics  ,76.24,110
+1035,Interactive Car,Toys,52.81,210
+1036,Classic Memoir,books,8.92,102
+1037,Comfortable Jacket,Clothing,29.98,177
+1038,Interactive Doll,Toys,211.74,198
+1039,Fun Doll,Toys,219.88,167
+1040,Portable Headphones,Electronics,58.79,106
+1041,Educational Doll,Toys,12.22,212
+1042,Classic Jeans,  Clothing ,17.6,113
+1043,Fun Doll,Toys,156.23,125
+1044,Rustic Table,Home,198.03,127
+1045,cozy rug,Home,12.51,174
+1046,Hardcover Guide,  Books ,177.04,108
+1047,Portable Headphones,Electronics,185.88,189
+1048,Compact Headphones,Electronics,41.21,146
+1049,Stylish Jacket,Clothing,45.2,229
+1050,Classic Novel,Books,222.85,125
+1051,Portable Monitor,Electronics,63.87,228
+1052,RUSTIC LAMP,Home,141.88,239
+1053,Durable Jacket,Clothing,30.14,184
+1054,  Hardcover Memoir ,Books,171.26,192
+1055,Classic Sweater,Clothing,234.1,117
+1056,Portable Monitor,Electronics,116.54,162
+1057,Classic Shirt,Clothing,18.06,134
+1058,Wireless Speaker,Electronics,205.25,176
+1059,Durable Jacket,Clothing,77.74,111
+1060,Smart Headphones, Electronics  ,169.05,209
+1061,modern lamp,Home,202.78,158
+1062,  Modern Memoir  ,Books,116.04,178
+1063,Elegant Table,  Home ,169.54,199
+1064,Interactive Blocks,Toys,163.27,100
+1065,Fun Car,Toys,242.05,184
+1066,Interactive Puzzle,Toys,32.16,189
+1067,Classic Guide,  Books ,249.37,172
+1068,Hardcover Guide,Books,132.88,115
+1069,Wireless Speaker,Electronics,137.61,239
+1070,Interactive Car,Toys,174.9,148
+1071,Portable Monitor,electronics,61.56,215
+1072,Wireless Speaker,Electronics,104.68,124
+1073,DURABLE JACKET, Clothing  ,194.41,200
+1074,Compact Monitor,  Electronics ,239.78,124
+1075,Educational Doll,Toys,139.98,169
+1076,Compact Monitor,Electronics,196.26,231
+1077,Portable Camera,Electronics,108.48,201
+1078,WIRELESS MONITOR,Electronics,164.49,249
+1079,Illustrated Memoir,Books,40.08,190
+1080,  Modern Lamp  ,Home,103.91,242
+1081,Stylish Jacket,Clothing,247.46,117
+1082,Cozy Lamp, Home  ,163.33,103
+1083,Durable Sweater,Clothing,38.53,153
+1084,Rustic Table,Home,109.44,224
+1085,Wireless Camera,Electronics,138.38,198
+1086,Wireless Speaker,Electronics,145.6,117
+1087,Elegant Lamp,Home,243.63,105
+1088,Portable Camera,Electronics,34.27,141
+1089,Colorful Puzzle,Toys,93.58,215
+1090,Illustrated Guide,Books,240.95,227
+1091,Compact Headphones,Electronics,35.56,220
+1092,Educational Doll,Toys,58.7,248
+1093,Fun Doll,Toys,171.02,190
+1094,  Comfortable Sweater  ,Clothing,10.01,222
+1095,Educational Puzzle,Toys,45.42,112
+1096,Illustrated Novel,  Books  ,16.52,157
+1097,Classic Jeans, Clothing ,46.38,214
+1098,Classic Jacket,Clothing,52.35,244
+1099,Elegant Lamp,Home,152.17,136
+1100,Modern Novel,Books,234.58,106
+1101,Illustrated Anthology,  Books ,141.23,127
+1102,Modern Memoir,Books,175.45,107
+1103,Educational Blocks,Toys,152.96,173
+1104,Compact Headphones,Electronics,50.47,135
+1105,Cozy Rug,  Home  ,182.79,176
+1106,Modern Chair,Home,212.47,238
+1107,Interactive Doll,TOYS,30.78,111
+1108,Smart Speaker,Electronics,21.55,184
+1109,Wireless Speaker,Electronics,176.13,190
+1110,Modern Table,Home,242.44,103
+1111,Colorful Car,Toys,238.14,118
+1112,Illustrated Memoir,  books ,244.75,214
+1113,Rustic Table,Home,42.55,117
+1114,Wireless Speaker,Electronics,124.95,239
+1115,Modern Memoir,Books,103.84,222
+1116,Smart Speaker,Electronics,33.56,242
+1117,Portable Speaker,Electronics,231.87,189
+1118,Portable Camera,Electronics,92.79,111
+1119,Hardcover Novel,Books,120.38,204
+1120,Compact Headphones,Electronics,244.44,227
+1121,Rustic Lamp,Home,177.14,106
+1122,Stylish Jacket,clothing,40.53,147
+1123,Educational Puzzle,  Toys ,102.07,208
+1124,Classic Sweater,  Clothing ,37.56,182
+1125, Colorful Car ,Toys,112.27,155
+1126,Classic Guide,Books,114.45,127
+1127,Classic Novel,Books,49.82,246
+1128,Classic Sweater,Clothing,203.97,169
+1129,educational puzzle,Toys,143.02,222
+1130,Colorful Car,Toys,39.3,102
+1131,Durable Jeans,Clothing,239.2,137
+1132, Smart Monitor  ,Electronics,82.2,191
+1133,Durable Shirt,Clothing,192.95,129
+1134,Compact Camera,Electronics,77.4,169
+1135,Colorful Car,Toys,99.98,232
+1136,Illustrated Anthology,Books,165.06,249
+1137,Classic Novel,Books,26.77,231
+1138,Classic Jacket,Clothing,236.45,120
+1139,Modern Novel,Books,56.46,206
+1140,FUN BLOCKS,TOYS,60.72,241
+1141,Comfortable Shirt,Clothing,127.2,103
+1142,Elegant Lamp,Home,72.34,234
+1143,Classic Memoir,Books,90.04,234
+1144,Rustic Rug,Home,183.25,197
+1145,Comfortable Jacket,Clothing,131.82,128
+1146,Modern Guide,Books,170.11,157
+1147,Smart Speaker,Electronics,98.94,126
+1148,Interactive Puzzle,Toys,198.13,235
+1149,Interactive Doll, Toys  ,25.54,182
+1150,  Classic Sweater  , Clothing  ,42.55,107
+1151,Fun Puzzle,Toys,31.53,222
+1152,hardcover anthology,Books,248.58,146
+1153,Rustic Chair,Home,27.02,208
+1154,Fun Car,Toys,122.64,236
+1155,Compact Headphones,ELECTRONICS,231.39,247
+1156,Hardcover Guide,Books,147.91,111
+1157,Wireless Headphones,Electronics,208.85,155
+1158,Rustic Table,Home,98.81,206
+1159,Elegant Chair,Home,100.15,188
+1160,Comfortable Jeans,Clothing,215.4,227
+1161,Elegant Rug,Home,230.35,245
+1162,Classic Novel,Books,214.48,208
+1163,Comfortable Shirt,Clothing,109.33,164
+1164,Elegant Table,Home,241.19,221
+1165,Interactive Puzzle,Toys,247.67,180
+1166,Stylish Jacket,  Clothing ,86.83,221
+1167,Colorful Blocks,Toys,239.15,247
+1168,Modern Memoir,Books,120.14,171
+1169,Cozy Lamp,Home,97.69,242
+1170,Wireless Speaker,Electronics,110.93,208
+1171, wireless speaker ,Electronics,140.4,127
+1172,Modern Anthology,Books,67.52,123
+1173,Stylish Jacket,Clothing,41.98,117
+1174,  Durable Jeans  ,Clothing,229.05,117
+1175,Elegant Table,Home,32.01,193
+1176,Fun Doll,Toys,41.47,250
+1177,Portable Headphones,Electronics,121.01,248
+1178,COLORFUL CAR,Toys,134.51,196
+1179,colorful blocks,  Toys  ,241.66,128
+1180,Colorful Puzzle,Toys,81.36,126
+1181,Wireless Speaker,Electronics,55.19,226
+1182,Hardcover Anthology,Books,225.68,246
+1183,ELEGANT RUG,Home,219.21,230
+1184,Wireless Headphones,Electronics,235.36,103
+1185,Stylish Jeans,Clothing,62.08,197
+1186,Cozy Chair,  Home ,198.8,131
+1187,Wireless Monitor,electronics,160.93,235
+1188,Colorful Car,Toys,103.55,110
+1189,Elegant Rug,Home,39.73,172
+1190,Portable Speaker,Electronics,150.69,129
+1191,Portable Headphones,electronics,132.29,192
+1192,Rustic Rug,Home,137.18,132
+1193,Classic Anthology,Books,121.12,122
+1194,Illustrated Anthology,Books,140.31,196
+1195,Rustic Table,Home,125.77,214
+1196,Colorful Doll,Toys,134.34,206
+1197,Modern Rug,Home,217.2,242
+1198,Wireless Speaker,Electronics,91.09,171
+1199,Illustrated Novel,Books,198.3,162
+1200,Colorful Doll,Toys,160.62,156
+1201,  Illustrated Anthology ,Books,127.24,105
+1202,Interactive Blocks,Toys,95.07,110
+1203,Educational Doll,Toys,16.31,140
+1204,Modern Anthology,Books,104.5,213
+1205,Fun Puzzle,Toys,6.41,153
+1206,Fun Blocks,Toys,99.47,180
+1207,Educational Doll,Toys,116.96,205
+1208,Compact Speaker,Electronics,48.17,185
+1209,Smart Monitor,electronics,100.56,128
+1210,Rustic Table,Home,140.47,202
+1211,Cozy Lamp,Home,51.61,101
+1212,Illustrated Guide,Books,103.57,212
+1213,Hardcover Guide,Books,231.39,157
+1214,Interactive Doll,Toys,64.71,240
+1215,Classic Anthology,Books,107.24,204
+1216,Illustrated Novel,Books,26.75,190
+1217,Durable Shirt,Clothing,196.87,185
+1218,Durable Jeans,Clothing,41.34,142
+1219,Elegant Lamp,Home,62.57,241
+1220,Wireless Speaker,ELECTRONICS,221.14,130
+1221, Smart Camera ,  Electronics  ,49.33,120
+1222,Modern Novel,Books,103.69,180
+1223,Compact Speaker, Electronics  ,115.35,155
+1224,Colorful Doll,Toys,181.42,249
+1225,Classic Jeans,Clothing,162.68,229
+1226,Interactive Puzzle,Toys,156.14,216
+1227, Hardcover Novel ,Books,74.24,226
+1228,  Modern Memoir  ,Books,54.17,243
+1229,Hardcover Novel,Books,128.0,223
+1230,Educational Blocks,Toys,119.55,221
+1231,Rustic Chair,Home,187.89,124
+1232,Rustic Rug,Home,50.29,117
+1233,Smart Headphones,Electronics,210.5,206
+1234,Compact Headphones,Electronics,19.82,211
+1235,Comfortable Jeans,Clothing,55.38,248
+1236,Educational Blocks,  toys ,98.7,153
+1237,Comfortable Jeans,Clothing,49.85,126
+1238,Comfortable Shirt,Clothing,62.67,219
+1239,Wireless Monitor,  Electronics ,104.72,139
+1240,Cozy Rug,Home,19.69,215
+1241,Comfortable Shirt,Clothing,190.47,101
+1242,Fun Blocks,Toys,201.17,171
+1243,Classic Memoir,Books,51.12,226
+1244,Illustrated Memoir,Books,49.5,179
+1245,COLORFUL PUZZLE,Toys,175.18,175
+1246,Colorful Doll,Toys,58.94,176
+1247,Fun Blocks,Toys,77.87,109
+1248,Modern Memoir,Books,132.95,177
+1249,Hardcover Memoir,Books,63.99,107
+1250,Compact Camera,Electronics,76.72,172
+1251,Classic Memoir,Books,61.32,149
+1252,Stylish Jacket,Clothing,80.61,113
+1253,Stylish Jacket,Clothing,216.77,224
+1254,Stylish Sweater,Clothing,8.77,120
+1255,Educational Car,Toys,94.15,124
+1256,Modern Memoir,Books,234.79,242
+1257,Educational Blocks,Toys,217.66,228
+1258,Portable Speaker,Electronics,45.16,157
+1259,Illustrated Guide,Books,37.46,104
+1260,Interactive Puzzle,Toys,35.32,109
+1261,Cozy Chair,Home,107.03,216
+1262,Stylish Shirt,Clothing,5.47,241
+1263,Hardcover Guide,  Books ,129.86,202
+1264,Durable Jacket,Clothing,47.72,157
+1265,Durable Jeans,Clothing,38.67,215
+1266,Wireless Camera,Electronics,232.25,117
+1267,Educational Puzzle,Toys,173.01,203
+1268,Elegant Lamp,Home,152.0,221
+1269,Modern Chair,Home,73.06,197
+1270,Rustic Lamp,Home,65.11,123
+1271,Hardcover Memoir,  Books  ,87.83,237
+1272,Durable Shirt,Clothing,74.01,203
+1273,Rustic Chair,Home,166.45,118
+1274,Fun Blocks,Toys,85.22,106
+1275,Elegant Chair,Home,116.8,165
+1276, Compact Monitor  ,Electronics,17.58,153
+1277,Cozy Chair,Home,150.36,240
+1278,PORTABLE MONITOR,Electronics,141.91,142
+1279,Fun Blocks,TOYS,42.11,216
+1280,Hardcover Guide, Books ,220.45,216
+1281,COMPACT SPEAKER,Electronics,168.21,161
+1282,Smart Monitor,Electronics,25.26,127
+1283,Modern Anthology,Books,18.95,127
+1284,Compact Headphones,Electronics,182.33,170
+1285,Wireless Headphones,Electronics,184.95,196
+1286,Portable Headphones,Electronics,215.45,127

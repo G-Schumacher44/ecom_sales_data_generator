@@ -135,14 +135,20 @@ def generate_customers(num_customers=1000, faker=None, config=None, guest_shoppe
         # CLV bucket based on loyalty tier (now handles None tier)
         clv_bucket = clv_map.get(loyalty_tier, None)
 
+        first_name = faker.first_name()
+        last_name = faker.last_name()
+
         customer = {
             'customer_id': f"CUST-{customer_id_num:04d}",
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': f"{first_name.lower()}.{last_name.lower()}@{faker.free_email_domain()}",
+            'phone_number': faker.phone_number(),
             'age': random.randint(min_age, max_age),
             'gender': gender,
             'loyalty_tier': loyalty_tier,
             'signup_date': signup_date_dt.isoformat(),
             'customer_status': random.choices(customer_status_options, customer_status_probs)[0],
-            'email': faker.email(),
             'email_verified': random.random() < email_verified_prob,
             'marketing_opt_in': random.random() < marketing_opt_in_prob,
             'loyalty_enrollment_date': loyalty_enroll_date,
@@ -277,6 +283,9 @@ def generate_guest_customers(num_guest_customers, faker=None, config=None, start
 
         customer = {
             'customer_id': customer_id,
+            'first_name': None,
+            'last_name': None,
+            'phone_number': None,
             'age': age,
             'gender': gender,
             'loyalty_tier': loyalty_tier,

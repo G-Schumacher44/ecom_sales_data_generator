@@ -292,27 +292,6 @@ def validate_repeat_purchase_propensity(dataframes, messiness, config, tolerance
 
     logger.info("✅ Repeat purchase propensity validation passed.")
 
-            continue
-
-        # With the new Poisson model for visits, the probability of at least one repeat purchase is 1 - e^(-lambda * p)
-        # where lambda is the visit propensity (avg visits) and p is the conversion rate.
-        avg_visits_propensity = cart_propensity # Renaming for clarity
-        expected_repeat_order_rate = 1 - np.exp(-avg_visits_propensity * cart_conversion_rate)
-        
-        # Use a slightly wider tolerance due to the nature of the Poisson distribution
-        tolerance = 0.07
-
-        total_customers_in_tier = len(tier_customers)
-        repeat_customers_in_tier = len(tier_customers[tier_customers['order_count'] > 1])
-        actual_repeat_order_rate = repeat_customers_in_tier / total_customers_in_tier if total_customers_in_tier > 0 else 0
-
-        if not (expected_repeat_order_rate - tolerance <= actual_repeat_order_rate <= expected_repeat_order_rate + tolerance * 1.5): # Allow more upside variance
-            handle_issue(
-                f"Repeat purchase rate for tier '{tier}' ({actual_repeat_order_rate:.2%}) is outside the expected range of ~{expected_repeat_order_rate:.2%}.",
-                messiness, level="warn"
-            )
-
-    logger.info("✅ Repeat purchase propensity validation passed.")
 ### --- Big Audit functions ---
 
 # Placeholder: you can integrate your big_audit.py functions here with similar messiness control.
