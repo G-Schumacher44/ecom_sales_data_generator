@@ -134,11 +134,10 @@ This generator goes beyond simple row creation by simulating a complete, interco
 <details>
 <summary><strong>🔮 v0.4.0 (Planned)</strong></summary>
 
-- B2B purchase logic: lines of credit, bulk buying behavior
-- Reseller segmentation: cohort rules, volume-based discounts
-- Shipping & fulfillment enrichment: lead times, delivery lag, backorders
-- Marketing program metadata: coupons, campaign IDs
-- Warehousing & inventory extension (WMS simulation layer)
+- **Marketing Attribution & Coupon Codes**: Introduce a `promotions` table and logic for applying coupon codes at checkout, allowing for analysis of campaign effectiveness and discount strategies.
+- **Dynamic Inventory & Stockouts**: Evolve the static `product_catalog` into a dynamic inventory system where purchases deplete stock levels, potentially leading to stockouts that affect cart conversion.
+- **Shipping & Fulfillment Lead Times**: Add `ship_date` and `delivery_date` to the `orders` table to simulate fulfillment lead times and analyze the impact of shipping speed on customer satisfaction.
+- **Customer-Level Messiness**: Introduce more targeted messiness, such as customers changing their shipping address or having multiple accounts that need to be merged.
 </details>
 </details> 
 

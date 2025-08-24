@@ -323,29 +323,8 @@ def main():
                 # Only pass columns, num_rows, faker_instance, and lookup_cache to customers generator
                 rows = row_generators[table_name](columns, num_rows, faker_instance, lookup_cache)
             elif table_name == 'order_items':
-                # The generate_orders function now has a simpler signature
-                raw_order_items, order_updates = row_generators[table_name](columns, None, faker_instance, lookup_cache, config)
-
-                # The generator can create duplicate (order_id, product_id) rows, violating the PK.
-                # We must aggregate these duplicates before saving.
-                if raw_order_items:
-                    order_items_df = pd.DataFrame(raw_order_items)
-                    
-                    # Define aggregation logic: sum quantities, keep first for others.
-                    agg_funcs = {col: 'first' for col in order_items_df.columns if col not in ['order_id', 'product_id', 'quantity', 'discount_amount']}
-                    agg_funcs['quantity'] = 'sum'
-                    agg_funcs['discount_amount'] = 'sum' # Sum discounts for aggregated items
-                    
-                    # Ensure product_id is a consistent type for grouping
-                    order_items_df['product_id'] = pd.to_numeric(order_items_df['product_id'], errors='coerce')
-
-                    deduped_df = order_items_df.groupby(['order_id', 'product_id'], as_index=False).agg(agg_funcs)
-                    
-                    # Preserve original column order
-                    original_columns = [col['name'] for col in columns]
-                    rows = deduped_df[original_columns].to_dict(orient='records')
-                else:
-                    rows = raw_order_items
+                # The generator now handles its own de-duplication and returns clean data.
+                rows, order_updates = row_generators[table_name](columns, None, faker_instance, lookup_cache, config)
 
                 # Apply updates to the cached orders
                 for order in lookup_cache.get('orders', []):

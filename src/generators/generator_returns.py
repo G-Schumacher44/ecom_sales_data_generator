@@ -114,8 +114,9 @@ def generate_return_items(columns: List[str], num_rows: int, faker_instance: Fak
     all_return_items = []
     return_updates = {}
     return_item_id_counter = 1
-    # Keep track of items already returned for an order to prevent double-returning
-    returned_item_keys = set()
+    # Use a shared cache to track returned items across multiple return events for the same order.
+    # This prevents an item from being returned more than once.
+    returned_item_keys = lookup_cache.setdefault('returned_item_keys', set())
 
     for ret in returns:
         order_id = ret["order_id"]
