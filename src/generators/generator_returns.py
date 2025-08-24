@@ -164,6 +164,7 @@ def generate_return_items(columns: List[str], num_rows: int, faker_instance: Fak
                 "category": item["category"],
                 "quantity_returned": quantity_returned,
                 "unit_price": item["unit_price"],
+                "cost_price": item["cost_price"],
                 "refunded_amount": round(refunded_amount, 2)
             }
             all_return_items.append(return_item)

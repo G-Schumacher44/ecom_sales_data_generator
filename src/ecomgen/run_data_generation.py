@@ -113,8 +113,12 @@ def resave_patched_table(table_name, lookup_cache, config, output_dir):
 
 def _calculate_and_apply_earned_status(lookup_cache, config, output_dir):
     """
-    Post-processing step to calculate cumulative spend and assign "earned"
-    loyalty tiers and CLV buckets to customers and their orders.
+    Post-processing step to calculate final customer status.
+
+    This function calculates each customer's total lifetime spend and uses it to
+    assign a final "earned" loyalty tier and CLV bucket. This update is applied
+    *only* to the `customers` table to reflect their current state. The `orders`
+    table intentionally retains the historical tier/bucket from the time of purchase.
     """
     print("📊 Calculating cumulative spend to assign earned tiers and CLV buckets...")
     tier_thresholds = config.get_parameter("tier_spend_thresholds")
@@ -137,7 +141,7 @@ def _calculate_and_apply_earned_status(lookup_cache, config, output_dir):
     registered_customers_df = customers_df[~is_guest_col].copy()
 
     # Calculate cumulative spend per customer
-    customer_spend = orders_df.groupby('customer_id')['order_total'].sum().to_dict()
+    customer_spend = orders_df.groupby('customer_id')['gross_total'].sum().to_dict()
 
     def get_earned_value(spend, thresholds):
         # Sort thresholds by value descending to get the highest qualifying tier/bucket
@@ -162,10 +166,6 @@ def _calculate_and_apply_earned_status(lookup_cache, config, output_dir):
     # Update the master lookup_cache
     lookup_cache['customers'] = updated_customers_df.to_dict(orient='records')
 
-    # The `orders` table is NOT updated here. It correctly retains the evolving
-    # tier and clv_bucket status calculated at the time each order was generated.
-    # Only the `customers` table should reflect the final, current state of the customer.
-    lookup_cache['orders'] = orders_df.to_dict(orient='records')
     print("✅ Applied earned status to customers and orders.")
 
 def main():
@@ -332,8 +332,9 @@ def main():
                     order_items_df = pd.DataFrame(raw_order_items)
                     
                     # Define aggregation logic: sum quantities, keep first for others.
-                    agg_funcs = {col: 'first' for col in order_items_df.columns if col not in ['order_id', 'product_id', 'quantity']}
+                    agg_funcs = {col: 'first' for col in order_items_df.columns if col not in ['order_id', 'product_id', 'quantity', 'discount_amount']}
                     agg_funcs['quantity'] = 'sum'
+                    agg_funcs['discount_amount'] = 'sum' # Sum discounts for aggregated items
                     
                     # Ensure product_id is a consistent type for grouping
                     order_items_df['product_id'] = pd.to_numeric(order_items_df['product_id'], errors='coerce')

@@ -86,6 +86,7 @@ tables:
       - { name: product_name, type: TEXT }
       - { name: category, type: TEXT }
       - { name: unit_price, type: REAL }
+      - { name: cost_price, type: REAL } # NEW: The cost of the product for COGS analysis.
       - { name: inventory_quantity, type: INTEGER }
 
   - name: shopping_carts
@@ -130,7 +131,11 @@ tables:
         type: BOOLEAN
       - name: customer_tier
         type: TEXT
-      - name: order_total
+      - name: gross_total # NEW: The total before discounts.
+        type: REAL
+      - name: net_total # NEW: The final total after discounts.
+        type: REAL
+      - name: total_discount_amount # NEW: The total discount applied to the order.
         type: REAL
       - name: payment_method
         type: TEXT
@@ -139,6 +144,10 @@ tables:
       - name: shipping_cost
         type: REAL
       - name: agent_id
+        type: TEXT
+      - name: actual_shipping_cost # NEW: The business's actual cost to ship.
+        type: REAL
+      - name: payment_processing_fee # NEW: The fee paid to the payment processor.
         type: TEXT
       - name: shipping_address
         type: TEXT
@@ -165,6 +174,10 @@ tables:
       - name: quantity
         type: INTEGER
       - name: unit_price
+        type: REAL
+      - name: discount_amount # NEW: The discount applied to this line item.
+        type: REAL
+      - name: cost_price # NEW: The cost of the product at the time of sale.
         type: REAL
 
   - name: returns
@@ -212,6 +225,8 @@ tables:
         type: INTEGER
       - name: unit_price
         type: REAL
+      - name: cost_price # NEW: The cost of the product at the time of sale.
+        type: REAL
       - name: refunded_amount
         type: REAL
 
@@ -223,6 +238,7 @@ lookup_config:
     num_products: 1286
     min_price: 5.0
     max_price: 250.0
+    cost_price_margin_range: [0.4, 0.7] # NEW: Product cost is 40-70% of its unit price.
     min_inventory_quantity: 100
     max_inventory_quantity: 250
     generator: generators.generator_catalog.generate_product_catalog
@@ -569,6 +585,27 @@ parameters:
     'Social Media': { electronics: 3.0, toys: 2.0, clothing: 1.5 } # Push gadgets
     Website: { home: 2.0, books: 1.5 } # Lifestyle focus
     Phone: { home: 2.5, electronics: 1.5 } # Higher-ticket items
+  # NEW: Parameters for financial analysis.
+  financials:
+    # NEW: More detailed model for the business's actual shipping costs.
+    shipping_business_costs:
+      # The base cost to the business for each shipping speed.
+      base_costs:
+        Standard: 4.50
+        Two-Day: 38.00
+        Overnight: 70.00
+      # The random variance applied to the base cost (e.g., due to weight, zone).
+      # [-0.15, 0.10] means the final cost can be 15% lower to 10% higher than the base.
+      cost_variance_pct: [-0.15, 0.10]
+    # Defines the fee rate for each payment processor.
+    payment_fee_rates:
+      "Credit Card": 0.025 # 2.5%
+      "PayPal": 0.03
+      "Apple Pay": 0.02
+      "Google Pay": 0.02
+      "ACH": 0.01
+      "Ebay": 0.035
+      "NewEgg": 0.035
   return_rate: 0.25 # NEW: Generate returns for 25% of all orders.
   no_tier_probability: 0.1 # 10% of new customers will not have a loyalty tier
   # NEW: Distribution of signups by channel, to create more realistic acquisition funnels.
@@ -592,6 +629,11 @@ parameters:
     Standard: 5.0
     Two-Day: 45.0
     Overnight: 80.0
+  # NEW: Settings for applying discounts to order items.
+  discount_settings:
+    probability: 0.20 # 20% of order items will have a discount.
+    range_pct: [0.05, 0.25] # Discount will be between 5% and 25% of the item's price.
+
   global_payment_method_distribution: # NEW: Default payment method distribution for channels without specific rules
     Credit Card: 0.60
     PayPal: 0.20

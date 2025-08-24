@@ -70,19 +70,19 @@ def run_big_audit(data_dir: str, messiness: str):
 
     # 3. Business logic checks
 
-    # order_total equals sum of order_items per order
+    # gross_total equals sum of order_items per order (before discounts)
     order_items['item_total'] = order_items['quantity'] * order_items['unit_price']
     order_totals_calc = order_items.groupby('order_id')['item_total'].sum().reset_index()
     merged_orders = orders.merge(order_totals_calc, on='order_id', how='left')
-    merged_orders['order_total_diff'] = abs(merged_orders['order_total'] - merged_orders['item_total'])
-    order_total_mismatches = merged_orders[merged_orders['order_total_diff'] > 0.01]
-    print(f"Orders with mismatched order_total: {len(order_total_mismatches)}")
+    merged_orders['gross_total_diff'] = abs(merged_orders['gross_total'] - merged_orders['item_total']).fillna(0)
+    order_total_mismatches = merged_orders[merged_orders['gross_total_diff'] > 0.01]
+    print(f"Orders with mismatched gross_total: {len(order_total_mismatches)}")
 
     # refunded_amount equals sum of return_items per return
     return_items['refund_total'] = return_items['refunded_amount']
     return_totals_calc = return_items.groupby('return_id')['refund_total'].sum().reset_index()
     merged_returns = returns.merge(return_totals_calc, on='return_id', how='left')
-    merged_returns['refund_diff'] = abs(merged_returns['refunded_amount'] - merged_returns['refund_total'])
+    merged_returns['refund_diff'] = abs(merged_returns['refunded_amount'] - merged_returns['refund_total']).fillna(0)
     return_total_mismatches = merged_returns[merged_returns['refund_diff'] > 0.01]
     print(f"Returns with mismatched refunded_amount: {len(return_total_mismatches)}")
 
@@ -103,7 +103,7 @@ def run_big_audit(data_dir: str, messiness: str):
 
     # 4. Distribution summary for key numeric columns
     print("\nNumeric summaries:")
-    print("Orders order_total stats:\n", orders['order_total'].describe())
+    print("Orders gross_total stats:\n", orders['gross_total'].describe())
     print("Returns refunded_amount stats:\n", returns['refunded_amount'].describe())
     print("Order Items quantity stats:\n", order_items['quantity'].describe())
     print("Return Items quantity_returned stats:\n", return_items['quantity_returned'].describe())

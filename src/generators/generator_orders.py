@@ -6,6 +6,7 @@ Includes logic for dynamic tier evolution.
 
 import random
 from typing import List, Dict, Any
+import pandas as pd
 from datetime import datetime
 from faker import Faker
 from .generator_common_utils import get_param, get_vocab, assign_agent
@@ -16,8 +17,11 @@ def generate_order_id(faker_instance: Faker) -> str:
 
 def generate_orders(columns: List[str], num_rows: int, faker_instance: Faker, lookup_cache: Dict, config: Any) -> List[Dict[str, Any]]:
     """
-    Generates order records from converted shopping carts.
-    Includes logic to evolve a customer's tier with each new order.
+    Generates order header records from converted shopping carts.
+
+    This function models a customer's "earned" status by calculating their loyalty tier
+    and CLV bucket based on their cumulative spend *at the time of each order*.
+    This creates a realistic, evolving snapshot of customer value.
     """
     converted_carts = lookup_cache.get("converted_carts", [])
     customers_by_id = {c['customer_id']: c for c in lookup_cache.get('customers', [])}
@@ -34,6 +38,7 @@ def generate_orders(columns: List[str], num_rows: int, faker_instance: Faker, lo
     shipping_speed_dist = config.get_parameter('shipping_speed_distribution', {'Standard': 1.0})
     shipping_costs = config.get_parameter('shipping_costs', {'Standard': 5.0})
     channel_rules = config.get_parameter('channel_rules', {})
+    financial_params = config.get_parameter('financials', {})
     global_payment_methods = config.get_parameter('global_payment_method_distribution', {'Credit Card': 1.0})
     expedited_pct = config.get_parameter('expedited_pct', 20) / 100.0
 
@@ -83,6 +88,15 @@ def generate_orders(columns: List[str], num_rows: int, faker_instance: Faker, lo
         shipping_weights = list(shipping_speed_dist.values())
         shipping_speed = random.choices(shipping_speeds, weights=shipping_weights, k=1)[0]
         shipping_cost = shipping_costs.get(shipping_speed, 5.0)
+
+        # NEW: Calculate business-side financial data using the enriched model
+        shipping_business_costs = financial_params.get('shipping_business_costs', {})
+        base_costs = shipping_business_costs.get('base_costs', {})
+        cost_variance = shipping_business_costs.get('cost_variance_pct', [0.0, 0.0])
+        base_shipping_cost = base_costs.get(shipping_speed, shipping_cost) # Fallback to customer price if not defined
+        variance_multiplier = 1.0 + random.uniform(cost_variance[0], cost_variance[1])
+        actual_shipping_cost = round(base_shipping_cost * variance_multiplier, 2)
+
         agent_id = assign_agent(order_channel, config)
 
         order = {
@@ -94,10 +108,14 @@ def generate_orders(columns: List[str], num_rows: int, faker_instance: Faker, lo
             "order_channel": order_channel,
             "is_expedited": random.random() < expedited_pct,
             "customer_tier": earned_tier,
-            "order_total": cart["cart_total"],
+            "gross_total": cart["cart_total"], # This is the pre-discount total
+            "net_total": cart["cart_total"], # Will be patched after discounts are calculated
+            "total_discount_amount": 0.0, # Will be patched
             "payment_method": payment_method,
             "shipping_speed": shipping_speed,
             "shipping_cost": shipping_cost,
+            "actual_shipping_cost": actual_shipping_cost,
+            "payment_processing_fee": 0.0, # Will be patched after net_total is known
             "agent_id": agent_id,
             "shipping_address": customer["mailing_address"],
             "billing_address": customer["billing_address"],
@@ -110,17 +128,28 @@ def generate_orders(columns: List[str], num_rows: int, faker_instance: Faker, lo
 
 def generate_order_items(columns: List[str], num_rows: int, faker_instance: Faker, lookup_cache: Dict, config: Any) -> (List[Dict[str, Any]], Dict[str, Dict[str, Any]]):
     """
-    Generates order items by transferring them from converted carts.
+    Generates order items from converted carts, applies discounts, and calculates final order totals.
+
+    This function performs several key steps:
+    1. Transfers items from "converted" shopping carts to become order items.
+    2. Applies random discounts to line items based on configured probabilities.
+    3. Aggregates any duplicate product lines within the same order (e.g., summing quantities).
+    4. Calculates the final `net_total`, `total_discount_amount`, and `payment_processing_fee`.
+    5. Returns both the clean list of order items and a dictionary of updates to be patched back to the `orders` table.
     """
     converted_carts = lookup_cache.get("converted_carts", [])
     cart_items = lookup_cache.get("cart_items", [])
     orders = lookup_cache.get("orders", [])
+    products_by_id = {p['product_id']: p for p in lookup_cache.get('product_catalog', [])}
+    discount_settings = config.get_parameter('discount_settings', {})
+    financial_params = config.get_parameter('financials', {})
 
     if not converted_carts or not cart_items or not orders:
         return [], {}
 
     # Create mappings for quick lookup
     cart_id_to_order_id = {cart['cart_id']: order['order_id'] for cart, order in zip(sorted(converted_carts, key=lambda x: x['created_at']), orders)}
+    cart_id_to_gross_total = {cart['cart_id']: cart['cart_total'] for cart in converted_carts}
     
     all_order_items = []
     order_updates = {}
@@ -135,12 +164,58 @@ def generate_order_items(columns: List[str], num_rows: int, faker_instance: Fake
 
     for cart_id, order_id in cart_id_to_order_id.items():
         items_in_cart = items_by_cart.get(cart_id, [])
+        total_discount_for_order = 0.0
+
         for item in items_in_cart:
+            product = products_by_id.get(item['product_id'])
+            if not product:
+                continue # Skip if product not found, though this indicates an issue
+
+            # NEW: Apply discounts
+            discount_amount = 0.0
+            if random.random() < discount_settings.get('probability', 0):
+                discount_pct = random.uniform(*discount_settings.get('range_pct', [0, 0]))
+                # Discount is applied to the line item total (unit_price * quantity)
+                line_item_total = item['unit_price'] * item['quantity']
+                discount_amount = round(line_item_total * discount_pct, 2)
+
             order_item = item.copy()
             order_item.pop('cart_item_id', None)
             order_item.pop('cart_id', None)
             order_item['order_id'] = order_id
+            order_item['discount_amount'] = discount_amount
+            order_item['cost_price'] = product['cost_price']
             all_order_items.append(order_item)
-        order_updates[order_id] = {"total_items": len(items_in_cart)}
 
-    return all_order_items, order_updates
+            total_discount_for_order += discount_amount
+
+        # Use the definitive gross_total from the cart to avoid floating point discrepancies.
+        gross_total_for_order = cart_id_to_gross_total.get(cart_id, 0.0)
+        net_total_for_order = round(gross_total_for_order - total_discount_for_order, 2)
+
+        # NEW: Calculate payment processing fee based on the final net_total
+        order_record = next((o for o in orders if o['order_id'] == order_id), None)
+        payment_method = order_record.get('payment_method') if order_record else 'Credit Card'
+        fee_rates = financial_params.get('payment_fee_rates', {})
+        payment_fee_rate = fee_rates.get(payment_method, 0.0)
+        payment_processing_fee = round(net_total_for_order * payment_fee_rate, 2)
+
+        order_updates[order_id] = {
+            "total_items": len(items_in_cart),
+            "net_total": net_total_for_order,
+            "total_discount_amount": round(total_discount_for_order, 2),
+            "payment_processing_fee": payment_processing_fee
+        }
+
+    # De-duplicate items before returning: a cart can have the same product added twice.
+    # This ensures the final order_items table has a valid composite primary key.
+    if not all_order_items:
+        return [], {}
+
+    order_items_df = pd.DataFrame(all_order_items)
+    agg_funcs = {col: 'first' for col in order_items_df.columns if col not in ['order_id', 'product_id', 'quantity', 'discount_amount']}
+    agg_funcs['quantity'] = 'sum'
+    agg_funcs['discount_amount'] = 'sum'
+    deduped_df = order_items_df.groupby(['order_id', 'product_id'], as_index=False).agg(agg_funcs)
+
+    return deduped_df.to_dict(orient='records'), order_updates

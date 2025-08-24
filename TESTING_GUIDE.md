@@ -54,6 +54,8 @@ This is the most important test suite for ensuring data quality. It is **execute
   1.  That the number of rows in the `orders` table exactly matches the number of `shopping_carts` with a `status` of "converted."
   2.  That the actual cart-to-order conversion rate is statistically close to the `conversion_rate` configured in the YAML file.
 - **`validate_repeat_purchase_propensity`**: Checks that the actual percentage of customers who make a second purchase aligns with the behavior defined in the `repeat_purchase_settings` in the YAML file.
+- **`validate_financial_logic`**: Verifies that order totals are calculated correctly (`gross_total` - sum of `discount_amount` = `net_total`) and that other financial columns like `actual_shipping_cost` and `payment_processing_fee` are valid.
+- **`validate_cogs_logic`**: Ensures product profitability by checking that `cost_price` is not greater than `unit_price` in the `product_catalog`. It also validates that this `cost_price` is correctly snapshotted to the `order_items` and `return_items` tables.
 - **`validate_cart_totals`**: Ensures that the `cart_total` in the `shopping_carts` table is consistent with its status. For `converted` and `abandoned` carts, it must match the sum of its items. For `emptied` carts, the total must be zero and it must have no associated items.
 - **`validate_cart_timestamps`**: Checks for logical consistency among cart-related timestamps (e.g., an item's `added_at` cannot be before the cart's `created_at`).
 - **`validate_return_refunds`**: Ensures that the `refunded_amount` in the `returns` table header correctly matches the sum of the `refunded_amount` of its associated `return_items`.

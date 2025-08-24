@@ -459,6 +459,89 @@ def validate_repeat_purchase_propensity(dataframes, messiness, config, tolerance
 
     logger.info("✅ Repeat purchase propensity validation passed.")
 
+def validate_financial_logic(dataframes, messiness, tolerance=0.01):
+    """Validates the integrity of financial calculations (discounts, totals)."""
+    orders_df = dataframes.get('orders')
+    order_items_df = dataframes.get('order_items')
+
+    if orders_df is None or order_items_df is None:
+        return # Cannot perform validation without both tables
+
+    # 1. Validate that gross_total - total_discount_amount = net_total
+    # This check is now more direct as it uses columns only from the orders table.
+    if 'total_discount_amount' not in orders_df.columns:
+        handle_issue("`total_discount_amount` column is missing from orders table.", messiness, level="error")
+        return
+
+    # Check for mismatches in net_total calculation
+    expected_net_total = orders_df['gross_total'] - orders_df['total_discount_amount']
+    mismatches = orders_df[abs(orders_df['net_total'] - expected_net_total) > tolerance]
+    if not mismatches.empty:
+        for _, row in mismatches.iterrows():
+            handle_issue(f"Net total mismatch for order_id {row['order_id']}: gross={row['gross_total']}, discount={row['total_discount_amount']}, net={row['net_total']}", messiness, level="error")
+
+    # 2. Validate that financial columns are not negative
+    if (orders_df['actual_shipping_cost'] < 0).any():
+        handle_issue("Negative 'actual_shipping_cost' values found in orders.", messiness, level="warn")
+
+    if (orders_df['payment_processing_fee'] < 0).any():
+        handle_issue("Negative 'payment_processing_fee' values found in orders.", messiness, level="warn")
+
+    if (orders_df['total_discount_amount'] < 0).any():
+        handle_issue("Negative 'total_discount_amount' values found in orders.", messiness, level="warn")
+
+    if (order_items_df['discount_amount'] < 0).any():
+        handle_issue("Negative 'discount_amount' values found in order_items.", messiness, level="warn")
+
+    logger.info("✅ Financial calculations (totals, discounts) are valid.")
+
+def validate_cogs_logic(dataframes, messiness):
+    """Validates the integrity of COGS (Cost of Goods Sold) data across tables."""
+    if 'product_catalog' not in dataframes:
+        return # Cannot perform COGS validation without catalog
+
+    catalog_df = dataframes['product_catalog']
+    order_items_df = dataframes.get('order_items')
+    return_items_df = dataframes.get('return_items')
+
+    # 1. Validate cost_price in product_catalog
+    if 'cost_price' not in catalog_df.columns:
+        handle_issue("`cost_price` column is missing from product_catalog.", messiness, level="error")
+        return # Stop further checks if base column is missing
+
+    if (catalog_df['cost_price'] > catalog_df['unit_price']).any():
+        handle_issue("Found products where `cost_price` is greater than `unit_price`.", messiness, level="warn")
+
+    # 2. Validate cost_price was snapshotted to order_items
+    if order_items_df is not None:
+        if 'cost_price' not in order_items_df.columns:
+            handle_issue("`cost_price` column is missing from order_items.", messiness, level="error")
+        else:
+            merged_order_items = pd.merge(
+                order_items_df,
+                catalog_df[['product_id', 'cost_price']],
+                on='product_id',
+                suffixes=('', '_catalog')
+            )
+            if not np.isclose(merged_order_items['cost_price'], merged_order_items['cost_price_catalog']).all():
+                handle_issue("`cost_price` in order_items does not match the value from product_catalog.", messiness, level="error")
+
+    # 3. Validate cost_price was snapshotted to return_items from order_items
+    if return_items_df is not None and order_items_df is not None:
+        if 'cost_price' not in return_items_df.columns:
+            handle_issue("`cost_price` column is missing from return_items.", messiness, level="error")
+        else:
+            # We need to join on both order_id and product_id to uniquely identify the original line item
+            merged_return_items = pd.merge(
+                return_items_df,
+                order_items_df[['order_id', 'product_id', 'cost_price']],
+                on=['order_id', 'product_id'],
+                suffixes=('', '_order_item')
+            )
+            if not np.isclose(merged_return_items['cost_price'], merged_return_items['cost_price_order_item']).all():
+                handle_issue("`cost_price` in return_items does not match the value from the original order_item.", messiness, level="error")
+
+    logger.info("✅ COGS data integrity and snapshotting logic are valid.")
 ### --- Big Audit functions ---
 
 # Placeholder: you can integrate your big_audit.py functions here with similar messiness control.
@@ -500,6 +583,8 @@ def run_all_tests(data_dir: str, messiness: str, run_big_audit: bool = False, de
     validate_date_fields(dataframes, messiness)
     validate_agent_assignments(config, dataframes, messiness)
     validate_conversion_funnel(dataframes, messiness, config)
+    validate_cogs_logic(dataframes, messiness)
+    validate_financial_logic(dataframes, messiness)
     validate_repeat_purchase_propensity(dataframes, messiness, config, debug=debug)
 
     # Optionally run big audit tests

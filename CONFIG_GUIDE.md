@@ -84,15 +84,36 @@ This is controlled by the `repeat_purchase_settings` block, which now supports h
 
 `seasonal_factors`: Simulates volume spikes for events like holiday sales. The value is a multiplier for cart volume in a given month, creating non-flat cohort shapes and more realistic sales patterns.
 
+### Product & Profitability
+
+`cost_price_margin_range`: A parameter in the `product_catalog` lookup configuration that defines the product's cost as a percentage of its `unit_price` (e.g., `[0.4, 0.7]` means cost is 40-70% of retail). This is used to generate the `cost_price` for each product.
+
+The `cost_price` is then snapshotted into the `order_items` and `return_items` tables at the time of transaction. This ensures that historical margin analysis remains accurate even if product costs in the main catalog change over time.
+
+### Operational Financials
+
+The `financials` block in the `parameters` section adds another layer of operational cost data. This moves beyond simple revenue vs. product cost (COGS) to enable a much more precise analysis of net margin per order.
+
+- **`shipping_business_costs`**: A block that defines a more realistic model for the business's actual shipping costs.
+  - **`base_costs`**: Maps each `shipping_speed` to its base cost for the business (e.g., the rate negotiated with a carrier).
+  - **`cost_variance_pct`**: A range (e.g., `[-0.1, 0.1]`) that introduces random variance to the base cost, simulating factors like fuel surcharges or package weight.
+This decouples the business's cost from the customer-facing `shipping_cost`, allowing for more precise profitability analysis.
+- **`payment_fee_rates`**: A mapping of payment methods to their processing fee percentages (e.g., `Credit Card: 0.025`). This is used to generate the `payment_processing_fee` for each order, calculated on the final `net_total`.
+- **`discount_settings`**: Controls the application of discounts at the line-item level. You can set the `probability` of an item being discounted and the `range_pct` for the discount amount. This populates the `discount_amount` in `order_items` and is used to calculate the `gross_total` and `net_total` in the `orders` table.
+The total discount for an order is also summed and stored in the `orders.total_discount_amount` column for easier analysis.
+This is a random event for each line item, meaning the same product can be discounted in one order but not in another.
+
 ### Earned Customer Value
 
-A key feature of v0.3.0 is that customer value is no longer pre-assigned; it's **earned**.
+A key feature of v0.3.0 is that a customer's value is not static; it's **earned** over time. The simulation models this in two stages to create a realistic dataset.
 
 `tier_spend_thresholds` & `clv_spend_thresholds`: These mappings define the cumulative spending required to achieve a certain `loyalty_tier` or `clv_bucket`.
 
-The simulation follows a two-step process:
-1.  A customer's *initial* `loyalty_tier` is assigned at signup. This initial tier influences their early purchasing behavior (propensity, cart size, etc.).
-2.  After all orders are generated, a post-processing step calculates each customer's total lifetime spend and **re-assigns** their final `loyalty_tier` and `clv_bucket` based on the thresholds. This ensures the final dataset reflects a realistic progression of customer value.
+1.  **Initial Tier at Signup**: When a customer is first created, they are assigned an `initial_loyalty_tier` based on their `signup_channel`. This initial tier influences their early purchasing behavior (e.g., a "Gold" tier customer might have a higher propensity to buy).
+2.  **Evolving Tier at Purchase**: As the simulation generates orders chronologically, it tracks each customer's cumulative spend. The `customer_tier` saved on each `orders` record reflects the customer's status *at that moment in time*.
+3.  **Final Tier in Customer Profile**: After all orders are generated, a final calculation is run. The `customers` table is updated so that each customer's `loyalty_tier` and `clv_bucket` reflect their final, up-to-date status based on their total lifetime spending.
+
+This two-stage process ensures that the final `customers` table is a clean, current snapshot of your customer base, while the historical `orders` table contains the rich, evolving data needed for cohort analysis.
 
 ### Returns & Refunds
 

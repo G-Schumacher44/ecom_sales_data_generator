@@ -109,6 +109,7 @@ This generator goes beyond simple row creation by simulating a complete, interco
 - **Long-Tail Churn & Reactivation**: Added simulation of long-term dormancy and customer reactivation, providing richer data for advanced cohort and LTV analysis.
 - **Enhanced Refund Realism**: Refund logic is now driven by the `reason` for the return, with configurable probabilities for full vs. partial refunds.
 - **Seasonal & Event-Driven Spikes**: Added `seasonal_factors` to simulate volume spikes for events like holiday sales, creating non-flat cohort shapes.
+- **Detailed Financial Modeling**: Integrated `cost_price` for COGS analysis, `discount_amount` for promotions, `actual_shipping_cost` for shipping profitability, and `payment_processing_fee` for transaction costs, enabling precise net margin analysis.
 - **Improved Schema & Data Integrity**: Added composite primary keys and foreign key constraints to the auto-generated `load_data.sql` script. Fixed data generation logic to prevent duplicate line items, ensuring all database constraints are met.
 ---
 ### ✅ v0.2.0
