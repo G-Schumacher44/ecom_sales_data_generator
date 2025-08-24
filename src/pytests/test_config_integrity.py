@@ -26,13 +26,6 @@ def test_customer_status_probs_sum_to_1():
     total = sum(status_col.get("probabilities", []))
     assert round(total, 5) == 1.0
 
-def test_return_reason_weights_sum_to_1():
-    cfg = Config("config/ecom_sales_gen_template.yaml")
-    rr_weights = cfg.parameters["baseline_return_reason_weights"]
-    for category, reasons in rr_weights.items():
-        total = sum(reasons.values())
-        assert round(total, 5) == 1.0, f"{category} total={total}"
-
 
 def test_order_channel_distribution_sums_to_1():
     cfg = Config("config/ecom_sales_gen_template.yaml")

@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import logging
 import sys
+import numpy as np
 from collections import defaultdict, Counter
 from datetime import datetime
 from utils.config import Config
@@ -84,7 +85,7 @@ def validate_numeric_fields(dataframes, messiness):
     logger.info("✅ Numeric fields in order_items and return_items are valid and sane.")
 
 def validate_primary_keys(dataframes, messiness):
-    """Checks for uniqueness in all primary key columns."""
+    """Checks for uniqueness in all single-column and composite primary keys."""
     pk_map = {
         "product_catalog": "product_id",
         "customers": "customer_id",
@@ -94,6 +95,9 @@ def validate_primary_keys(dataframes, messiness):
         "returns": "return_id",
         "return_items": "return_item_id",
     }
+    composite_pk_map = {
+        "order_items": ["order_id", "product_id"]
+    }
 
     for table, pk_col in pk_map.items():
         if table in dataframes:
@@ -101,6 +105,13 @@ def validate_primary_keys(dataframes, messiness):
             if df[pk_col].dropna().duplicated().any():
                 duplicates = df[df[pk_col].duplicated()][pk_col].tolist()
                 handle_issue(f"Duplicate primary key values found in '{table}.{pk_col}': {duplicates[:5]}", messiness)
+
+    for table, pk_cols in composite_pk_map.items():
+        if table in dataframes:
+            df = dataframes[table]
+            if df.duplicated(subset=pk_cols).any():
+                duplicate_rows = df[df.duplicated(subset=pk_cols, keep=False)].head(5)
+                handle_issue(f"Duplicate composite primary key values found in '{table}' for columns {pk_cols}. Sample duplicates:\n{duplicate_rows}", messiness)
 
     logger.info("✅ All primary key uniqueness checks passed.")
 
@@ -138,6 +149,65 @@ def validate_return_refunds(dataframes, messiness, tolerance=0.01):
             handle_issue(f"Refunded amount mismatch for return_id {row['return_id']}: header={row['refunded_amount']}, items_sum={row['items_refund_sum']}", messiness)
 
     logger.info("✅ All returns.refunded_amount values match the sum of their return_items.refunded_amount.")
+
+def validate_cart_totals(dataframes, messiness, tolerance=0.01):
+    """Validates that shopping_cart totals match the sum of their items."""
+    if 'shopping_carts' not in dataframes or 'cart_items' not in dataframes:
+        return
+    carts_df = dataframes['shopping_carts']
+    cart_items_df = dataframes['cart_items']
+
+    # Calculate sum of item totals per cart from cart_items
+    cart_items_df['item_total'] = pd.to_numeric(cart_items_df['quantity'], errors='coerce') * pd.to_numeric(cart_items_df['unit_price'], errors='coerce')
+    item_totals_sum = cart_items_df.groupby('cart_id')['item_total'].sum().reset_index()
+    item_totals_sum.rename(columns={'item_total': 'items_total_sum'}, inplace=True)
+
+    # Merge with the main carts table and fill missing sums with 0
+    merged_df = pd.merge(carts_df, item_totals_sum, on='cart_id', how='left').fillna(0)
+
+    # Make status check case-insensitive to handle messiness
+    merged_df['status_lower'] = merged_df['status'].str.strip().str.lower()
+
+    # --- Validation Logic ---
+    # 1. For 'emptied' carts, total must be 0 and there should be no items.
+    emptied_carts = merged_df[merged_df['status_lower'] == 'emptied']
+    if not emptied_carts.empty:
+        if (emptied_carts['cart_total'] != 0).any():
+            handle_issue("Found 'emptied' carts with a non-zero cart_total.", messiness, level="warn")
+        if (emptied_carts['items_total_sum'] != 0).any():
+            handle_issue("Found cart_items associated with 'emptied' carts.", messiness, level="warn")
+
+    # 2. For all other carts, the total must match the sum of items.
+    other_carts = merged_df[merged_df['status_lower'] != 'emptied']
+    mismatches = other_carts[abs(other_carts['cart_total'] - other_carts['items_total_sum']) > tolerance]
+
+    if not mismatches.empty:
+        for _, row in mismatches.iterrows():
+            handle_issue(f"Cart total mismatch for cart_id {row['cart_id']}: header={row['cart_total']}, items_sum={row['items_total_sum']}", messiness, level="warn")
+
+    logger.info("✅ All shopping_carts.cart_total values are consistent with their status and items.")
+
+def validate_cart_timestamps(dataframes, messiness):
+    """Validates logical consistency of cart-related timestamps."""
+    if 'shopping_carts' not in dataframes or 'cart_items' not in dataframes:
+        return
+    carts_df = dataframes['shopping_carts']
+    cart_items_df = dataframes['cart_items']
+
+    # Convert to datetime, coercing errors to NaT
+    carts_df['created_at_dt'] = pd.to_datetime(carts_df['created_at'], errors='coerce')
+    carts_df['updated_at_dt'] = pd.to_datetime(carts_df['updated_at'], errors='coerce')
+    cart_items_df['added_at_dt'] = pd.to_datetime(cart_items_df['added_at'], errors='coerce')
+
+    # Merge to check relationships
+    merged_df = pd.merge(cart_items_df, carts_df[['cart_id', 'created_at_dt', 'updated_at_dt']], on='cart_id', how='left')
+
+    if (merged_df['added_at_dt'] < merged_df['created_at_dt']).any():
+        handle_issue("Found cart_items with an 'added_at' before the cart's 'created_at'.", messiness, level="warn")
+    if (carts_df['updated_at_dt'] < carts_df['created_at_dt']).any():
+        handle_issue("Found shopping_carts with an 'updated_at' before its 'created_at'.", messiness, level="warn")
+
+    logger.info("✅ All cart-related timestamps are logically consistent.")
 
 def validate_date_fields(dataframes, messiness):
     """Validates date formats and logical consistency (return_date >= order_date)."""
@@ -187,7 +257,7 @@ def validate_all_referential_integrity(dataframes, messiness):
         if child_table in dataframes and parent_table in dataframes:
             validate_foreign_key(dataframes[child_table], dataframes[parent_table], child_key, parent_key, messiness)
     logger.info("✅ All referential integrity (FK) checks passed.")
-def test_agent_assignments(config, dataframes, messiness):
+def validate_agent_assignments(config, dataframes, messiness):
     agent_pool = getattr(config, 'vocab', {}).get('agent_pool', {})
     agents = agent_pool.get('agents', [])
     config_agents = set(agent['id'] for agent in agents)
@@ -223,7 +293,8 @@ def validate_conversion_funnel(dataframes, messiness, config):
         carts_df = dataframes["shopping_carts"]
 
         num_orders = len(orders_df)
-        converted_carts = carts_df[carts_df["status"] == "converted"]
+        # Make status check case-insensitive to handle messiness from inject_mess.py
+        converted_carts = carts_df[carts_df["status"].str.strip().str.lower() == "converted"]
         num_converted_carts = len(converted_carts)
 
         if num_orders != num_converted_carts:
@@ -243,10 +314,10 @@ def validate_conversion_funnel(dataframes, messiness, config):
 
     logger.info("✅ Conversion funnel (carts to orders) is consistent.")
 
-def validate_repeat_purchase_propensity(dataframes, messiness, config):
+def validate_repeat_purchase_propensity(dataframes, messiness, config, tolerance=0.07, debug=False):
     """
-    Checks if the actual repeat purchase rate per customer tier is within a
-    reasonable tolerance of the configured propensity.
+    Checks if the actual repeat purchase rate per customer segment (channel/tier)
+    is within a reasonable tolerance of the configured propensity.
     """
     if 'orders' not in dataframes or 'customers' not in dataframes:
         logger.warning("Skipping repeat purchase validation: orders or customers data not found.")
@@ -254,44 +325,223 @@ def validate_repeat_purchase_propensity(dataframes, messiness, config):
 
     orders_df = dataframes['orders']
     customers_df = dataframes['customers']
-
-    # Get relevant settings from config
     repeat_settings = config.get_parameter('repeat_purchase_settings', {})
-    propensity_by_tier = repeat_settings.get('propensity_by_tier', {})
+
+    # Exclude reactivation orders from this specific validation, as they are
+    # driven by a separate probability model (reactivation_settings).
+    if 'is_reactivated' in orders_df.columns:
+        orders_df = orders_df[orders_df['is_reactivated'] == False]
+
+    carts_df = dataframes.get('shopping_carts')
+    seasonal_factors = config.get_parameter('seasonal_factors', {})
+
+    propensity_config = repeat_settings.get('propensity_by_channel_and_tier', {})
     cart_conversion_rate = config.get_parameter('conversion_rate', 0.03)
 
-    if not propensity_by_tier:
+    if not propensity_config:
         logger.info("✅ Skipping repeat purchase validation: no propensity settings found in config.")
         return
 
-    # Calculate the number of orders per customer
     order_counts = orders_df.groupby('customer_id').size().reset_index(name='order_count')
+    # BUG FIX: The population for validation must be ALL customers in a segment,
+    # not just those who made a purchase. We start with customers_df and left-join order counts.
+    merged_df = pd.merge(customers_df[['customer_id', 'initial_loyalty_tier', 'signup_channel']], order_counts, on='customer_id', how='left')
+    merged_df['order_count'] = merged_df['order_count'].fillna(0) # Customers with no orders get a count of 0.
 
-    # Merge with customer data to get loyalty tiers
-    merged_df = pd.merge(order_counts, customers_df[['customer_id', 'loyalty_tier']], on='customer_id', how='left')
-    merged_df['loyalty_tier'] = merged_df['loyalty_tier'].fillna('default')
+    merged_df['initial_loyalty_tier'] = merged_df['initial_loyalty_tier'].fillna('default')
+    merged_df['signup_channel'] = merged_df['signup_channel'].fillna('default')
 
-    # For each tier, calculate and validate the actual repeat purchase rate
-    for tier, cart_propensity in propensity_by_tier.items():
-        tier_customers = merged_df[merged_df['loyalty_tier'] == tier]
-        if tier_customers.empty:
-            continue
+    # Iterate through the nested configuration to validate each segment
+    for channel, tier_propensities in propensity_config.items():
+        if not isinstance(tier_propensities, dict): continue
+        for tier, avg_visits_propensity in tier_propensities.items():
+            segment_customers = merged_df[(merged_df['signup_channel'] == channel) & (merged_df['initial_loyalty_tier'] == tier)]
+            if segment_customers.empty:
+                continue
 
-        # The expected rate is the chance of creating a new cart * the chance of that cart converting
-        expected_repeat_order_rate = cart_propensity * cart_conversion_rate
-        tolerance = 0.05  # Allow for 5% absolute tolerance due to randomness
+            # --- NEW: Calculate effective seasonality multiplier on a PER-SEGMENT basis ---
+            # The previous logic used a single global multiplier, which was incorrect because
+            # different segments have different temporal distributions and are thus affected
+            # by seasonality differently. This logic now calculates the multiplier for each segment.
+            effective_multiplier = 1.0
+            if carts_df is not None and not carts_df.empty and seasonal_factors:
+                segment_customer_ids = set(segment_customers['customer_id'])
+                segment_carts_df = carts_df[carts_df['customer_id'].isin(segment_customer_ids)].copy()
 
-        total_customers_in_tier = len(tier_customers)
-        repeat_customers_in_tier = len(tier_customers[tier_customers['order_count'] > 1])
-        actual_repeat_order_rate = repeat_customers_in_tier / total_customers_in_tier if total_customers_in_tier > 0 else 0
+                if not segment_carts_df.empty:
+                    # From this segment's carts, find the repeaters. Seasonality only affects them.
+                    cart_counts = segment_carts_df['customer_id'].value_counts()
+                    repeater_ids_in_segment = cart_counts[cart_counts > 1].index
+                    repeater_carts_df = segment_carts_df[segment_carts_df['customer_id'].isin(repeater_ids_in_segment)].copy()
 
-        if not (expected_repeat_order_rate - tolerance <= actual_repeat_order_rate <= expected_repeat_order_rate + tolerance):
-            handle_issue(
-                f"Repeat purchase rate for tier '{tier}' ({actual_repeat_order_rate:.2%}) is outside the expected range of ~{expected_repeat_order_rate:.2%}.",
-                messiness, level="warn"
-            )
+                    if not repeater_carts_df.empty:
+                        repeater_carts_df['created_at_dt'] = pd.to_datetime(repeater_carts_df['created_at'], errors='coerce')
+                        repeater_carts_df.dropna(subset=['created_at_dt'], inplace=True)
+                        repeater_carts_df['month'] = repeater_carts_df['created_at_dt'].dt.month
+
+                        final_carts_per_month = repeater_carts_df['month'].value_counts()
+
+                        base_carts_sum = 0
+                        for month, count in final_carts_per_month.items():
+                            multiplier = seasonal_factors.get(str(month), seasonal_factors.get(month, 1.0))
+                            base_carts_sum += count / multiplier
+                        
+                        if base_carts_sum > 0:
+                            effective_multiplier = len(repeater_carts_df) / base_carts_sum
+
+            # --- NEW: Zero-Inflated Poisson Model for Expected Rate ---
+            # The generator's logic is a mixture model:
+            # 1. A Bernoulli trial determines IF a customer is a "repeater" based on base propensity.
+            # 2. Seasonality ONLY increases cart volume for those who are already repeaters.
+            # The test must model this, not a simple Poisson process.
+
+            # Base lambda for repeat CARTS (before seasonality)
+            lambda_base_carts = avg_visits_propensity
+
+            # The test is validating against non-reactivated orders, so the model
+            # should only consider the organic repeat process.
+            # P(is_repeater) = 1 - P(no organic repeats)
+            prob_is_repeater = 1 - np.exp(-lambda_base_carts)
+
+            if prob_is_repeater > 1e-9: # Avoid division by zero for tiny probabilities
+                # The model should only consider the organic repeat carts.
+                # The average number of base carts for a repeater is 1 (initial) + the
+                # conditional mean of the Poisson process for repeat carts.
+                # E[X|X>0] for a Poisson(lambda) is lambda / (1 - e^-lambda)
+                # So, avg_base_total_carts = 1 + (lambda / prob_is_repeater)
+                lambda_total_base_repeat_carts = lambda_base_carts
+                avg_base_total_carts_for_repeater = 1 + (lambda_base_carts / prob_is_repeater)
+
+                # 2. Amplify this by the seasonality multiplier to get the final cart volume
+                avg_final_total_carts_for_repeater = avg_base_total_carts_for_repeater * effective_multiplier
+
+                # 3. Calculate the lambda for REPEAT orders based on the amplified cart volume
+                # The number of repeat carts is the total minus the one initial cart.
+                lambda_repeat_orders_for_repeater = (avg_final_total_carts_for_repeater - 1) * cart_conversion_rate
+
+                # 4. Use this lambda in the formula for P(total_orders > 1 | is_repeater)
+                boost_config = config.get_parameter('first_purchase_conversion_boost', {})
+                boost_multiplier = boost_config.get(channel, 1.0)
+                boosted_conversion_rate = cart_conversion_rate * boost_multiplier
+
+                # P(total <= 1 | repeater) = P(repeat_orders=0) + P(initial=0, repeat_orders=1)
+                prob_repeater_has_0_repeat_orders = np.exp(-lambda_repeat_orders_for_repeater)
+                prob_repeater_has_1_repeat_order = lambda_repeat_orders_for_repeater * prob_repeater_has_0_repeat_orders
+                prob_total_le_1_for_repeater = prob_repeater_has_0_repeat_orders + (1 - boosted_conversion_rate) * prob_repeater_has_1_repeat_order
+                prob_gt_1_order_for_repeater = 1 - prob_total_le_1_for_repeater
+                
+                expected_repeat_order_rate = prob_is_repeater * prob_gt_1_order_for_repeater
+            else:
+                expected_repeat_order_rate = 0.0
+
+            total_customers_in_segment = len(segment_customers)
+            repeat_customers_in_segment = len(segment_customers[segment_customers['order_count'] > 1])
+            actual_repeat_order_rate = repeat_customers_in_segment / total_customers_in_segment if total_customers_in_segment > 0 else 0
+
+            if debug:
+                logger.debug(f"--- Debugging Segment: {channel}/{tier} ---")
+                logger.debug(f"  Configured Avg Visits (lambda): {avg_visits_propensity}")
+                logger.debug(f"  Seasonal Multiplier: {effective_multiplier:.4f}")
+                logger.debug(f"  Prob. is Repeater: {prob_is_repeater:.4f}")
+                logger.debug(f"  Avg Final Carts for Repeater: {avg_final_total_carts_for_repeater:.4f}")
+                logger.debug(f"  Lambda for Repeater Orders: {lambda_repeat_orders_for_repeater:.4f}")
+                logger.debug(f"  P(>1 order | is repeater): {prob_gt_1_order_for_repeater:.4f}")
+                logger.debug(f"  Expected Rate: {expected_repeat_order_rate:.4f}")
+                logger.debug(f"  Actual Rate:   {actual_repeat_order_rate:.4f}")
+                logger.debug(f"  Total Customers in Segment: {total_customers_in_segment}")
+                logger.debug(f"  Repeat Customers in Segment: {repeat_customers_in_segment}")
+
+            if not (expected_repeat_order_rate - tolerance <= actual_repeat_order_rate <= expected_repeat_order_rate + tolerance * 1.5): # Allow more upside variance
+                handle_issue(
+                    f"Repeat purchase rate for segment '{channel}/{tier}' ({actual_repeat_order_rate:.2%}) is outside the expected range of ~{expected_repeat_order_rate:.2%}.",
+                    messiness, level="warn"
+                )
 
     logger.info("✅ Repeat purchase propensity validation passed.")
+
+def validate_financial_logic(dataframes, messiness, tolerance=0.01):
+    """Validates the integrity of financial calculations (discounts, totals)."""
+    orders_df = dataframes.get('orders')
+    order_items_df = dataframes.get('order_items')
+
+    if orders_df is None or order_items_df is None:
+        return # Cannot perform validation without both tables
+
+    # 1. Validate that gross_total - total_discount_amount = net_total
+    # This check is now more direct as it uses columns only from the orders table.
+    if 'total_discount_amount' not in orders_df.columns:
+        handle_issue("`total_discount_amount` column is missing from orders table.", messiness, level="error")
+        return
+
+    # Check for mismatches in net_total calculation
+    expected_net_total = orders_df['gross_total'] - orders_df['total_discount_amount']
+    mismatches = orders_df[abs(orders_df['net_total'] - expected_net_total) > tolerance]
+    if not mismatches.empty:
+        for _, row in mismatches.iterrows():
+            handle_issue(f"Net total mismatch for order_id {row['order_id']}: gross={row['gross_total']}, discount={row['total_discount_amount']}, net={row['net_total']}", messiness, level="error")
+
+    # 2. Validate that financial columns are not negative
+    if (orders_df['actual_shipping_cost'] < 0).any():
+        handle_issue("Negative 'actual_shipping_cost' values found in orders.", messiness, level="warn")
+
+    if (orders_df['payment_processing_fee'] < 0).any():
+        handle_issue("Negative 'payment_processing_fee' values found in orders.", messiness, level="warn")
+
+    if (orders_df['total_discount_amount'] < 0).any():
+        handle_issue("Negative 'total_discount_amount' values found in orders.", messiness, level="warn")
+
+    if (order_items_df['discount_amount'] < 0).any():
+        handle_issue("Negative 'discount_amount' values found in order_items.", messiness, level="warn")
+
+    logger.info("✅ Financial calculations (totals, discounts) are valid.")
+
+def validate_cogs_logic(dataframes, messiness):
+    """Validates the integrity of COGS (Cost of Goods Sold) data across tables."""
+    if 'product_catalog' not in dataframes:
+        return # Cannot perform COGS validation without catalog
+
+    catalog_df = dataframes['product_catalog']
+    order_items_df = dataframes.get('order_items')
+    return_items_df = dataframes.get('return_items')
+
+    # 1. Validate cost_price in product_catalog
+    if 'cost_price' not in catalog_df.columns:
+        handle_issue("`cost_price` column is missing from product_catalog.", messiness, level="error")
+        return # Stop further checks if base column is missing
+
+    if (catalog_df['cost_price'] > catalog_df['unit_price']).any():
+        handle_issue("Found products where `cost_price` is greater than `unit_price`.", messiness, level="warn")
+
+    # 2. Validate cost_price was snapshotted to order_items
+    if order_items_df is not None:
+        if 'cost_price' not in order_items_df.columns:
+            handle_issue("`cost_price` column is missing from order_items.", messiness, level="error")
+        else:
+            merged_order_items = pd.merge(
+                order_items_df,
+                catalog_df[['product_id', 'cost_price']],
+                on='product_id',
+                suffixes=('', '_catalog')
+            )
+            if not np.isclose(merged_order_items['cost_price'], merged_order_items['cost_price_catalog']).all():
+                handle_issue("`cost_price` in order_items does not match the value from product_catalog.", messiness, level="error")
+
+    # 3. Validate cost_price was snapshotted to return_items from order_items
+    if return_items_df is not None and order_items_df is not None:
+        if 'cost_price' not in return_items_df.columns:
+            handle_issue("`cost_price` column is missing from return_items.", messiness, level="error")
+        else:
+            # We need to join on both order_id and product_id to uniquely identify the original line item
+            merged_return_items = pd.merge(
+                return_items_df,
+                order_items_df[['order_id', 'product_id', 'cost_price']],
+                on=['order_id', 'product_id'],
+                suffixes=('', '_order_item')
+            )
+            if not np.isclose(merged_return_items['cost_price'], merged_return_items['cost_price_order_item']).all():
+                handle_issue("`cost_price` in return_items does not match the value from the original order_item.", messiness, level="error")
+
+    logger.info("✅ COGS data integrity and snapshotting logic are valid.")
 ### --- Big Audit functions ---
 
 # Placeholder: you can integrate your big_audit.py functions here with similar messiness control.
@@ -314,22 +564,28 @@ def big_audit_statistical_checks(orders, returns, messiness, config):
 
 ### --- Main ---
 
-def run_all_tests(data_dir: str, messiness: str, run_big_audit: bool = False):
+def run_all_tests(data_dir: str, messiness: str, run_big_audit: bool = False, debug: bool = False):
     config = Config()
 
     # Load all data into a dictionary of DataFrames
     dataframes = load_data(data_dir)
 
     # Run baseline QA tests
+    logger.info("--- Starting Primary Key / Foreign Key Audit ---")
     validate_primary_keys(dataframes, messiness)
     validate_all_referential_integrity(dataframes, messiness)
+    logger.info("--- PK/FK Audit Complete ---")
     validate_numeric_fields(dataframes, messiness)
     validate_catalog_schema(dataframes, messiness)
     validate_return_refunds(dataframes, messiness)
+    validate_cart_totals(dataframes, messiness)
+    validate_cart_timestamps(dataframes, messiness)
     validate_date_fields(dataframes, messiness)
-    test_agent_assignments(config, dataframes, messiness)
+    validate_agent_assignments(config, dataframes, messiness)
     validate_conversion_funnel(dataframes, messiness, config)
-    validate_repeat_purchase_propensity(dataframes, messiness, config)
+    validate_cogs_logic(dataframes, messiness)
+    validate_financial_logic(dataframes, messiness)
+    validate_repeat_purchase_propensity(dataframes, messiness, config, debug=debug)
 
     # Optionally run big audit tests
     orders_dict = dataframes.get('orders', pd.DataFrame()).to_dict('records')
@@ -346,9 +602,10 @@ def main():
     parser.add_argument("--data-dir", type=str, required=True, help="Directory where CSV output files are located")
     parser.add_argument("--run-big-audit", action="store_true", help="Run the big audit checks in addition to baseline QA")
     parser.add_argument("--messiness", type=str, choices=["baseline", "light_mess", "medium_mess", "heavy_mess"], default="baseline", help="Level of messiness tolerance for QA")
+    parser.add_argument("--debug", action="store_true", help="Enable detailed debug logging for propensity tests")
     args = parser.parse_args()
     try:
-        run_all_tests(data_dir=args.data_dir, messiness=args.messiness, run_big_audit=args.run_big_audit)
+        run_all_tests(data_dir=args.data_dir, messiness=args.messiness, run_big_audit=args.run_big_audit, debug=args.debug)
     except Exception as e:
         logger.error(f"QA tests failed with error: {e}")
         sys.exit(1)

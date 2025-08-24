@@ -58,17 +58,48 @@ faker_seed: 42
  # You can define parent-child links (orders → order_items), add conditional logic
  # for data integrity, and simulate realistic retail scenarios.
 tables:
+  - name: customers
+    columns:
+      - { name: customer_id, type: TEXT }
+      - { name: first_name, type: TEXT }
+      - { name: last_name, type: TEXT }
+      - { name: email, type: TEXT }
+      - { name: phone_number, type: TEXT }
+      - { name: signup_date, type: DATE }
+      - { name: gender, type: TEXT }
+      - { name: age, type: INTEGER }
+      - { name: is_guest, type: BOOLEAN }
+      - { name: customer_status, type: TEXT, options: ["Active", "Inactive"], probabilities: [0.9, 0.1] }
+      - { name: signup_channel, type: TEXT }
+      - { name: loyalty_tier, type: TEXT, options: ["Bronze", "Silver", "Gold", "Platinum"] }
+      - { name: initial_loyalty_tier, type: TEXT } # NEW: The tier assigned at signup, before any spend.
+      - { name: email_verified, type: BOOLEAN }
+      - { name: marketing_opt_in, type: BOOLEAN }
+      - { name: mailing_address, type: TEXT }
+      - { name: billing_address, type: TEXT }
+      - { name: loyalty_enrollment_date, type: DATE }
+      - { name: clv_bucket, type: TEXT }
+
+  - name: product_catalog
+    columns:
+      - { name: product_id, type: INTEGER }
+      - { name: product_name, type: TEXT }
+      - { name: category, type: TEXT }
+      - { name: unit_price, type: REAL }
+      - { name: cost_price, type: REAL } # NEW: The cost of the product for COGS analysis.
+      - { name: inventory_quantity, type: INTEGER }
+
   - name: shopping_carts
-    generate: 50000 # Increase traffic for a mid-sized retailer scenario.
+    generate: 40000 # Represents initial traffic volume, which is higher than the customer base.
     columns:
       - { name: cart_id, type: TEXT }
       - { name: customer_id, type: TEXT }
       - { name: created_at, type: DATE }
+      - { name: updated_at, type: DATE } # NEW: Tracks last cart activity
       - { name: cart_total, type: REAL }
-      - { name: status, type: TEXT } # open, converted, abandoned
+      - { name: status, type: TEXT } # open, converted, abandoned, emptied
 
   - name: cart_items
-    link_to_carts: true
     item_count_range: [1, 8]
     columns:
       - { name: cart_item_id, type: INTEGER }
@@ -76,6 +107,7 @@ tables:
       - { name: product_id, type: INTEGER }
       - { name: product_name, type: TEXT }
       - { name: category, type: TEXT }
+      - { name: added_at, type: DATE } # NEW: Tracks when item was added
       - { name: quantity, type: INTEGER }
       - { name: unit_price, type: REAL }
 
@@ -99,7 +131,11 @@ tables:
         type: BOOLEAN
       - name: customer_tier
         type: TEXT
-      - name: order_total
+      - name: gross_total # NEW: The total before discounts.
+        type: REAL
+      - name: net_total # NEW: The final total after discounts.
+        type: REAL
+      - name: total_discount_amount # NEW: The total discount applied to the order.
         type: REAL
       - name: payment_method
         type: TEXT
@@ -109,16 +145,23 @@ tables:
         type: REAL
       - name: agent_id
         type: TEXT
+      - name: actual_shipping_cost # NEW: The business's actual cost to ship.
+        type: REAL
+      - name: payment_processing_fee # NEW: The fee paid to the payment processor.
+        type: TEXT
       - name: shipping_address
         type: TEXT
       - name: billing_address
         type: TEXT
       - name: clv_bucket
         type: TEXT
+      - name: is_reactivated # NEW
+        type: BOOLEAN
 
   - name: order_items # Derived from cart_items of converted carts
     link_to_orders: true    # Dynamically generates N items per existing order
-    item_count_range: [1, 10]     # NEW: Alnones between 1 and 10 items per order
+    # NOTE: The 'item_count_range' here is ignored. The number of order_items is
+    # determined by the items in the original, converted shopping_cart.
     columns:
       - name: order_id
         type: TEXT
@@ -131,6 +174,10 @@ tables:
       - name: quantity
         type: INTEGER
       - name: unit_price
+        type: REAL
+      - name: discount_amount # NEW: The discount applied to this line item.
+        type: REAL
+      - name: cost_price # NEW: The cost of the product at the time of sale.
         type: REAL
 
   - name: returns
@@ -178,6 +225,8 @@ tables:
         type: INTEGER
       - name: unit_price
         type: REAL
+      - name: cost_price # NEW: The cost of the product at the time of sale.
+        type: REAL
       - name: refunded_amount
         type: REAL
 
@@ -187,9 +236,14 @@ tables:
 lookup_config:
   product_catalog:
     num_products: 1286
+    min_price: 5.0
+    max_price: 250.0
+    cost_price_margin_range: [0.4, 0.7] # NEW: Product cost is 40-70% of its unit price.
+    min_inventory_quantity: 100
+    max_inventory_quantity: 250
     generator: generators.generator_catalog.generate_product_catalog
   customers:
-    num_customers: 50000 # Increase the total customer base.
+    num_customers: 10000 # Scaled down for a first-year retailer scenario.
     min_age: 18
     max_age: 70
     gender_unknown_prob: 0.05
@@ -390,26 +444,183 @@ parameters:
   expedited_pct: 20
   gender_unknown_prob: 5
   order_days_back: 365
-  conversion_rate: 0.068 # Set to 6.8% for a slightly below-average conversion.
-  return_max_lag_days: 30
+  conversion_rate: 0.12 # A healthier, more realistic conversion rate.
+  # NEW: Controls how quickly a new registered customer makes their first visit.
+  time_to_first_cart_days_range: [1, 14]
+  # NEW: Boosts conversion rate for a customer's first purchase based on their signup channel.
+  first_purchase_conversion_boost:
+    Phone: 1.5  # 50% more likely to convert on first purchase
+    email: 1.3  # 30% more likely
+    Website: 1.1 # 10% more likely
   # NEW: Settings to control repeat purchase behavior for cohort analysis
   repeat_purchase_settings:
-    propensity_by_tier:
-      Platinum: 0.75 # 75% of Platinum customers will make another purchase
-      Gold: 0.60
-      Silver: 0.40
-      Bronze: 0.25
-      default: 0.15 # For customers with no tier
-    # Time delay in days between a purchase and the next visit
-    time_delay_days_range: [20, 150]
+    # NOTE: These values represent the AVERAGE NUMBER of repeat VISITS (lambda for a Poisson distribution).
+    # The final repeat PURCHASE rate is a function of these visit rates AND the global `conversion_rate`.
+    # NEW: Nested structure to create distinct behavior by signup channel and tier.
+    propensity_by_channel_and_tier:
+      Website:
+        Platinum: 4.8
+        Gold: 3.5
+        Silver: 2.4
+        Bronze: 1.2
+        default: 0.6
+      Phone: # Higher retention for high-touch channel
+        Platinum: 5.2
+        Gold: 4.0
+        Silver: 2.8
+        Bronze: 1.5
+        default: 0.7
+      'Social Media': # Lower retention for impulse channel
+        Platinum: 4.0
+        Gold: 3.0
+        Silver: 2.0
+        Bronze: 1.0
+        default: 0.5
+      default: # Fallback for email, etc.
+        Platinum: 4.5
+        Gold: 3.3
+        Silver: 2.2
+        Bronze: 1.1
+        default: 0.6
+    # NEW: Wider, channel-specific time delays for more variance.
+    time_delay_by_channel_and_tier:
+      # Structure is now { range: [min, max], sigma: value }
+      # Higher sigma creates more variance and heavier tails.
+      Website:
+        Platinum: { range: [10, 45], sigma: 0.5 }
+        Gold: { range: [15, 60], sigma: 0.6 }
+        Silver: { range: [20, 90], sigma: 0.7 }
+        Bronze: { range: [30, 120], sigma: 0.8 }
+        default: { range: [30, 150], sigma: 0.8 }
+      Phone:
+        Platinum: { range: [10, 40], sigma: 0.5 }
+        Gold: { range: [15, 50], sigma: 0.55 }
+        Silver: { range: [20, 75], sigma: 0.6 }
+        Bronze: { range: [25, 100], sigma: 0.65 }
+        default: { range: [30, 120], sigma: 0.7 }
+      'Social Media':
+        Platinum: { range: [15, 90], sigma: 0.8 }
+        Gold: { range: [20, 120], sigma: 0.9 }
+        Silver: { range: [30, 150], sigma: 1.0 }
+        Bronze: { range: [45, 180], sigma: 1.1 }
+        default: { range: [45, 200], sigma: 1.2 }
+      default:
+        Platinum: { range: [10, 60], sigma: 0.6 }
+        Gold: { range: [15, 75], sigma: 0.7 }
+        Silver: { range: [20, 100], sigma: 0.8 }
+        Bronze: { range: [30, 130], sigma: 0.9 }
+        default: { range: [30, 180], sigma: 1.0 }
+  # NEW: Stratify cart size and item quantity by tier to create sharper CLV distribution.
+  # Increased stratification between tiers.
+  cart_behavior_by_tier:
+    Platinum:
+      item_count_range: [4, 15]
+      quantity_range: [1, 6]
+    Gold:
+      item_count_range: [2, 10]
+      quantity_range: [1, 5]
+    Silver:
+      item_count_range: [1, 8]
+      quantity_range: [1, 3]
+    Bronze:
+      item_count_range: [1, 6]
+      quantity_range: [1, 2]
+    default: # For guests and no-tier customers
+      item_count_range: [1, 5]
+      quantity_range: [1, 2]
+  # NEW: Controls refund behavior based on the reason for the return.
+  refund_behavior_by_reason:
+    "Defective": { full_return_prob: 0.9, partial_quantity_prob: 0.1 }
+    "Arrived damaged": { full_return_prob: 0.95, partial_quantity_prob: 0.05 }
+    "Wrong item": { full_return_prob: 0.8, partial_quantity_prob: 0.2 }
+    "Product did not match description": { full_return_prob: 0.7, partial_quantity_prob: 0.3 }
+    "Changed mind": { full_return_prob: 0.2, partial_quantity_prob: 0.6 }
+    "No longer needed": { full_return_prob: 0.1, partial_quantity_prob: 0.5 }
+    default: { full_return_prob: 0.5, partial_quantity_prob: 0.4 }
+  # NEW: Controls the timing distribution for returns to create a long tail.
+  # Each entry is [max_days, cumulative_probability].
+  return_timing_distribution:
+    - [30, 0.80]  # 80% of returns happen within 30 days
+    - [90, 0.95]  # An additional 15% happen between 31-90 days
+    - [365, 1.0] # The final 5% happen between 91-365 days
+  # NEW: Probability that an order with one return will have a second, separate return event.
+  multi_return_probability: 0.15
+  # NEW: Simulates external shocks affecting cohort retention.
+  # Key is 'YYYY-MM', value is a multiplier for repeat visit propensity.
+  # < 1.0 simulates churn, > 1.0 simulates re-engagement.
+  retention_shocks:
+    '2024-03': 0.5  # 50% churn shock for March signups
+    '2024-05': 1.8  # 80% re-engagement boost for May signups
+  # Tiers are now "earned" based on cumulative spend. This replaces random evolution.
+  tier_spend_thresholds:
+    Platinum: 1000
+    Gold: 500
+    Silver: 100
+    Bronze: 0
+  # NEW: CLV buckets are also "earned" based on cumulative spend.
+  clv_spend_thresholds:
+    High: 750
+    Medium: 250
+    Low: 0
+  # NEW: Adds seasonal spikes to cart generation.
+  # The value is a multiplier for cart volume in that month.
+  seasonal_factors:
+    7: 1.2  # Summer sale
+    11: 1.6 # Black Friday
+    12: 2.1 # Holiday rush
+  # NEW: Simulates long-term customer reactivation.
+  reactivation_settings:
+    probability: 0.08 # 8% of customers will have a reactivation event.
+    delay_days_range: [200, 400] # The gap before they return.
+  # NEW: The probability that an abandoned cart will be "emptied" (total set to 0) vs. left full.
+  abandoned_cart_emptied_prob: 0.15
+  # NEW: Varies the base return rate by the customer's original signup channel.
+  return_rate_by_signup_channel:
+    'Social Media': 0.35 # Higher returns from impulse buys
+    Website: 0.25
+    Phone: 0.15 # Lower returns from high-touch sales
+    email: 0.20
+  # NEW: Skews product category preference by signup channel.
+  category_preference_by_signup_channel:
+    'Social Media': { electronics: 3.0, toys: 2.0, clothing: 1.5 } # Push gadgets
+    Website: { home: 2.0, books: 1.5 } # Lifestyle focus
+    Phone: { home: 2.5, electronics: 1.5 } # Higher-ticket items
+  # NEW: Parameters for financial analysis.
+  financials:
+    # NEW: More detailed model for the business's actual shipping costs.
+    shipping_business_costs:
+      # The base cost to the business for each shipping speed.
+      base_costs:
+        Standard: 4.50
+        Two-Day: 38.00
+        Overnight: 70.00
+      # The random variance applied to the base cost (e.g., due to weight, zone).
+      # [-0.15, 0.10] means the final cost can be 15% lower to 10% higher than the base.
+      cost_variance_pct: [-0.15, 0.10]
+    # Defines the fee rate for each payment processor.
+    payment_fee_rates:
+      "Credit Card": 0.025 # 2.5%
+      "PayPal": 0.03
+      "Apple Pay": 0.02
+      "Google Pay": 0.02
+      "ACH": 0.01
+      "Ebay": 0.035
+      "NewEgg": 0.035
   return_rate: 0.25 # NEW: Generate returns for 25% of all orders.
-  # Distribution of orders by channel reflecting typical online retailer data
-  order_channel_distribution: #
-    Web: 0.60
-    Phone: 0.15
-    Social Media: 0.10 # NEW
-    Ebay: 0.10         # NEW
-    NewEgg: 0.05       # NEW
+  no_tier_probability: 0.1 # 10% of new customers will not have a loyalty tier
+  # NEW: Distribution of signups by channel, to create more realistic acquisition funnels.
+  signup_channel_distribution:
+    Website: 0.55
+    email: 0.20
+    'Social Media': 0.15
+    Phone: 0.10
+  # Distribution of orders by channel, balanced to encourage more channel switching.
+  order_channel_distribution:
+    Web: 0.45
+    Phone: 0.20
+    Social Media: 0.15
+    Ebay: 0.15
+    NewEgg: 0.05
   shipping_speed_distribution:
     Standard: 0.65
     Two-Day: 0.20
@@ -418,9 +629,11 @@ parameters:
     Standard: 5.0
     Two-Day: 45.0
     Overnight: 80.0
-  free_shipping_pct: 0
-  free_shipping_min_order: 100.0
-  return_channel_preference_prob: 0.90 # NEW: 90% chance returns follow their order channel preference. Adjust as needed.
+  # NEW: Settings for applying discounts to order items.
+  discount_settings:
+    probability: 0.20 # 20% of order items will have a discount.
+    range_pct: [0.05, 0.25] # Discount will be between 5% and 25% of the item's price.
+
   global_payment_method_distribution: # NEW: Default payment method distribution for channels without specific rules
     Credit Card: 0.60
     PayPal: 0.20
@@ -431,83 +644,14 @@ parameters:
     Ebay: 0.00 # Set to 0 if only used for specific channel rules
     NewEgg: 0.00 # Set to 0 if only used for specific channel rules
 
-  # --- Advanced Messiness Injection Parameters ---
-  seasonal_spike_factors:
-    medium:
-      11: 1.4  # November
-      12: 1.6  # December
-    high:
-      11: 1.8  # November
-      12: 2.2  # December
-      7: 1.3   # July
-
-  # --- Contextual Return Rate Parameters ---
-  category_return_rates:
-    electronics: 0.35  # Higher rate for complex items or compatibility issues
-    clothing: 0.30     # Sizing issues are common
-    books: 0.05        # Very low return rate
-    home: 0.15
-    toys: 0.10
-    default: 0.20      # A fallback default rate for categories not specified
-
-# --- Baseline Return Reason Distribution ---
-# Each category defines the likelihood of return reasons.
-# Values are percentages and must sum to 100% per category.
-  baseline_return_reason_weights:
-    electronics:
-      "Defective": 0.4
-      "Product did not match description": 0.2
-      "Arrived damaged": 0.1
-      "Changed mind": 0.1
-      "No longer needed": 0.2
-    clothing:
-      "Changed mind": 0.5
-      "Wrong item": 0.3 # Sizing issues fall here
-      "Defective": 0.1
-      "Product did not match description": 0.1
-    books:
-      "Wrong item": 0.4
-      "Changed mind": 0.3
-      "Arrived damaged": 0.3 # e.g., bent cover
-    default: # Fallback for home, toys, etc.
-      "No longer needed": 0.2
-      "Changed mind": 0.1
-      "Found a better price": 0.3
-      "Product did not match description": 0.2
-      "Defective": 0.1
-      "Arrived damaged": 0.1
-
-  return_reason_bias_schemas:
-    medium:
-      electronics:
-        "Defective": 0.5
-        "Product did not match description": 0.3
-        "Arrived damaged": 0.2
-      clothing:
-        "Changed mind": 0.4
-        "Wrong item": 0.2
-        "Defective": 0.2
-        "Item arrived late": 0.2
-      default: # Fallback for other categories
-        "No longer needed": 0.1
-        "Defective": 0.2
-        "Found a better price": 0.2
-        "Changed mind": 0.1
-        "Product did not match description": 0.1
-        "Item arrived late": 0.3
-    high:
-      electronics:
-        "Defective": 0.6
-        "Arrived damaged": 0.3
-        "Damaged in transit": 0.1
-      clothing:
-        "Wrong item": 0.5
-        "Changed mind": 0.3
-        "Arrived damaged": 0.2
-      default:
-        "Arrived damaged": 0.5
-        "Item arrived late": 0.3
-        "No longer needed": 0.2
+  # NEW: Defines the probability distribution of loyalty tiers for each signup channel.
+  # The list corresponds to [Bronze, Silver, Gold, Platinum].
+  loyalty_distribution_by_channel:
+    Website: [0.4, 0.3, 0.2, 0.1] # Skews lower value
+    Phone: [0.2, 0.3, 0.3, 0.2]   # Skews higher value (e.g., high-touch sales)
+    email: [0.3, 0.4, 0.2, 0.1]   # Skews mid-range
+    'Social Media': [0.5, 0.3, 0.15, 0.05] # Skews very low value (e.g., impulse signups)
+    default: [0.4, 0.3, 0.2, 0.1] # Fallback distribution
 
 # -------------------- CHANNEL-SPECIFIC RULES --------------------
 # Overrides by order_channel. You can define allowed payment methods

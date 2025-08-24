@@ -20,22 +20,29 @@ def generate_product_catalog(n=100, faker=None, config=None):
         "product_name": str,
         "category": str,
         "unit_price": float,
+        "cost_price": float,
         "inventory_quantity": int
     }
     """
     faker = faker or __import__('faker').Faker()
-    # Use get_param and get_vocab to safely access config, consistent with other generators
-    min_price = get_param(config, "min_price", 5.0)
-    max_price = get_param(config, "max_price", 500.0)
+    # Get product-specific parameters from lookup_config for better encapsulation
+    product_lookup_params = config.lookup_config.get('product_catalog', {})
+    min_price = product_lookup_params.get("min_price", 5.0)
+    max_price = product_lookup_params.get("max_price", 500.0)
+    cost_price_margin_range = product_lookup_params.get("cost_price_margin_range", [0.4, 0.7])
+    min_inventory = product_lookup_params.get("min_inventory_quantity", 0)
+    max_inventory = product_lookup_params.get("max_inventory_quantity", 1000)
+
+    # Use category_vocab for generating names, but vocab.categories for the actual category list
     category_vocab = get_vocab(config, "category_vocab", {})
+    categories = get_vocab(config, "categories", [])
 
     catalog = []
-    use_vocab = category_vocab is not None and bool(category_vocab)
-    categories = list(category_vocab.keys()) if category_vocab else []
     for i in range(1, n + 1):
-        if use_vocab and categories:
-            category = random.choice(categories)
-            vocab = category_vocab.get(category, {})
+        category = random.choice(categories) if categories else faker.word().capitalize()
+        
+        if category_vocab:
+            vocab = category_vocab.get(category.lower(), {}) # Use lowercase for name-gen lookup
             adjectives = vocab.get("adjectives", [])
             nouns = vocab.get("nouns", [])
             if adjectives and nouns:
@@ -43,18 +50,20 @@ def generate_product_catalog(n=100, faker=None, config=None):
                 noun = random.choice(nouns)
                 product_name = f"{adj} {noun}"
             else:
-                # Fallback if a category has no adjectives/nouns.
-                # Combine two words to create a more plausible, robust product name.
                 product_name = f"{faker.word().capitalize()} {faker.word()}"
         else:
-            category = faker.word().capitalize()
             product_name = f"{faker.word().capitalize()} {faker.word()}"
+
+        unit_price = round(random.uniform(min_price, max_price), 2)
+        cost_margin = random.uniform(cost_price_margin_range[0], cost_price_margin_range[1])
+        cost_price = round(unit_price * cost_margin, 2)
         product = {
             "product_id": i,
             "product_name": product_name,
             "category": category,
-            "unit_price": round(random.uniform(min_price, max_price), 2),
-            "inventory_quantity": random.randint(0, 1000)
+            "unit_price": unit_price,
+            "cost_price": cost_price,
+            "inventory_quantity": random.randint(min_inventory, max_inventory)
         }
         catalog.append(product)
     return catalog
@@ -70,6 +79,7 @@ def validate_catalog_schema(catalog):
         "product_name": str,
         "category": str,
         "unit_price": float,
+        "cost_price": float,
         "inventory_quantity": int
     }
     for idx, product in enumerate(catalog):
