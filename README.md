@@ -103,14 +103,21 @@ This generator goes beyond simple row creation by simulating a complete, interco
 
 ### ✅ v0.3.0 (Current)
 
-- **Enriched Cart & Session Analysis**: Added detailed timestamps (`created_at`, `updated_at`, `added_at`) to all cart events and distinguished between `abandoned` and `emptied` carts, enabling granular analysis of shopper sessions and user intent.
-- **Advanced Behavioral Modeling**: Introduced highly stratified customer behavior based on `signup_channel` and `loyalty_tier`. This includes distinct repeat purchase rates, inter-order timing, return rates, and product category preferences.
-- **Earned Customer Status**: Implemented logic for customers to "earn" their `loyalty_tier` and `clv_bucket` based on their cumulative spend, creating a more realistic customer lifecycle.
-- **Long-Tail Churn & Reactivation**: Added simulation of long-term dormancy and customer reactivation, providing richer data for advanced cohort and LTV analysis.
+This release introduces a major leap in simulation depth, focusing on realistic customer behavior, detailed financial modeling, and enhanced data quality.
+
+#### 📈 Customer Behavior & Funnel Analysis
+- **Enriched Cart & Session Analysis**: Added detailed timestamps (`created_at`, `updated_at`, `added_at`) and distinguished between `abandoned` and `emptied` carts for granular analysis of user intent.
+- **Advanced Behavioral Modeling**: Introduced highly stratified customer behavior based on `signup_channel` and `loyalty_tier`, influencing repeat purchase rates, timing, and product preferences.
+- **Earned Customer Status**: Implemented logic for customers to "earn" their `loyalty_tier` and `clv_bucket` based on cumulative spend, creating a realistic customer lifecycle.
+- **Long-Tail Churn & Reactivation**: Added simulation of long-term dormancy and customer reactivation for advanced LTV analysis.
+
+#### 💰 Financial & Profitability Analysis
+- **Detailed Financial Modeling**: Integrated `cost_price` for COGS, `discount_amount` for promotions, `actual_shipping_cost` for shipping profitability, and `payment_processing_fee` for transaction costs, enabling precise net margin analysis.
+
+#### 🧰 Data Quality & Realism
 - **Enhanced Refund Realism**: Refund logic is now driven by the `reason` for the return, with configurable probabilities for full vs. partial refunds.
-- **Seasonal & Event-Driven Spikes**: Added `seasonal_factors` to simulate volume spikes for events like holiday sales, creating non-flat cohort shapes.
-- **Detailed Financial Modeling**: Integrated `cost_price` for COGS analysis, `discount_amount` for promotions, `actual_shipping_cost` for shipping profitability, and `payment_processing_fee` for transaction costs, enabling precise net margin analysis.
-- **Improved Schema & Data Integrity**: Added composite primary keys and foreign key constraints to the auto-generated `load_data.sql` script. Fixed data generation logic to prevent duplicate line items, ensuring all database constraints are met.
+- **Seasonal & Event-Driven Spikes**: Added `seasonal_factors` and `retention_shocks` to simulate volume spikes and external events, creating non-flat cohort shapes.
+- **Improved Schema & Data Integrity**: Added composite primary keys and foreign key constraints to the auto-generated `load_data.sql` script and fixed data generation logic to prevent duplicate line items.
 ---
 ### ✅ v0.2.0
 - **Full Funnel Simulation**: Added `shopping_carts` and `cart_items` to model the complete customer journey from browsing session to purchase.
