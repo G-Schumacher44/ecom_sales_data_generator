@@ -54,7 +54,8 @@ This is the most important test suite for ensuring data quality. It is **execute
   1.  That the number of rows in the `orders` table exactly matches the number of `shopping_carts` with a `status` of "converted."
   2.  That the actual cart-to-order conversion rate is statistically close to the `conversion_rate` configured in the YAML file.
 - **`validate_repeat_purchase_propensity`**: Checks that the actual percentage of customers who make a second purchase aligns with the behavior defined in the `repeat_purchase_settings` in the YAML file.
-- **`validate_financial_logic`**: Verifies that order totals are calculated correctly (`gross_total` - sum of `discount_amount` = `net_total`) and that other financial columns like `actual_shipping_cost` and `payment_processing_fee` are valid.
+- **`validate_repeat_purchase_propensity`**: A sophisticated statistical check that validates the customer lifecycle simulation. It verifies that the actual repeat purchase rate for each customer segment (defined by channel and tier) is statistically close to the configured propensity. The test uses a zero-inflated Poisson model to account for seasonality, conversion rates, and cohort-based shocks, ensuring the behavioral simulation is accurate.
+- **`validate_financial_logic`**: Verifies the integrity of order-level financial calculations. It confirms that `orders.net_total` correctly equals `orders.gross_total` - `orders.total_discount_amount`. It also ensures other key financial columns like `actual_shipping_cost` and `payment_processing_fee` contain valid, non-negative values.
 - **`validate_cogs_logic`**: Ensures product profitability by checking that `cost_price` is not greater than `unit_price` in the `product_catalog`. It also validates that this `cost_price` is correctly snapshotted to the `order_items` and `return_items` tables.
 - **`validate_cart_totals`**: Ensures that the `cart_total` in the `shopping_carts` table is consistent with its status. For `converted` and `abandoned` carts, it must match the sum of its items. For `emptied` carts, the total must be zero and it must have no associated items.
 - **`validate_cart_timestamps`**: Checks for logical consistency among cart-related timestamps (e.g., an item's `added_at` cannot be before the cart's `created_at`).
@@ -120,4 +121,22 @@ For analysts and developers who want to perform a hands-on audit directly within
 
 ___
 
-🔝 [Back to Top](#top) | ⬅️ [Back to Project README](README.md)
+<div align="center">
+  <a href="#testing-and-validation-guide">
+    ⬆️ <b>Back to Top</b>
+  </a>
+</div>
+
+<p align="center">
+  <a href="README.md">🏠 <b>Main README</b></a>
+  &nbsp;·&nbsp;
+  <a href="CONFIG_GUIDE.md">⚙️ <b>Config Guide</b></a>
+  &nbsp;·&nbsp;
+  <a href="TESTING_GUIDE.md">🧪 <b>Testing Guide</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/G-Schumacher44/sql_stories_portfolio_demo">📸 <b>See it in Action</b></a>
+</p>
+
+<p align="center">
+  <sub>✨ Synthetic Data · Python · QA Framework ✨</sub>
+</p>

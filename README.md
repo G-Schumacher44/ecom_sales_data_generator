@@ -15,7 +15,7 @@
 # 🛒 Ecommerce Sales Database Generator
 
 A YAML-configurable Python engine for generating synthetic, relational e-commerce databases — designed for SQL training, analytics storytelling, and realistic pipeline testing. This system goes beyond raw data: it simulates a full customer journey from browsing session to purchase, builds linked tables with referential integrity, and includes configurable messiness and built-in QA test suites to mirror real-world data challenges.
->📸 See it in action: [SQL Stories Demo](https://github.com/G-Schumacher44/sql_stories)
+>📸 See it in action: [SQL Stories Portfolio Demo](https://github.com/G-Schumacher44/sql_stories_portfolio_demo)
 
 ___
 
@@ -74,7 +74,7 @@ I built this system to reinforce, refresh, and evaluate my SQL skills through pr
 
 This tool doesn’t just generate data — it builds a complete relational database simulation. I designed a system to go beyond isolated datasets by embedding referential logic, conditionally required fields, and analytical scenarios into the generation process.
 
-You can see this engine in action in [SQL Stories Demo](https://github.com/G-Schumacher44/sql_stories), where I use AI-generated prompts to simulate realistic business scenarios and investigative workflows. This pairing gives me an unlimited sandbox to practice SQL storytelling, data diagnostics, and real-world problem solving — all powered by the datasets generated here.
+You can see this engine in action in the [SQL Stories Portfolio Demo](https://github.com/G-Schumacher44/sql_stories_portfolio_demo), where I use AI-generated prompts to simulate realistic business scenarios and investigative workflows. This pairing gives me an unlimited sandbox to practice SQL storytelling, data diagnostics, and real-world problem solving — all powered by the datasets generated here.
 
 **Human-readable. YAML-driven. Designed for learning.**
 
@@ -97,6 +97,21 @@ This generator goes beyond simple row creation by simulating a complete, interco
 - **Long-Tail Churn & Reactivation**: The simulation now includes logic for long-term customer churn and a configurable probability for dormant customers to reactivate after a long period, adding valuable edge cases for analysis.
 
 </details>
+
+<details>
+
+<summary><strong>🗺️ About the Project Ecosystem</strong></summary>
+
+This portfolio is one part of a larger, interconnected set of projects. Here’s how they fit together:
+
+*   **[ecom_sales_data_generator](This Repository)** `(The Engine)`
+    *   A custom Python package that produces the realistic, synthetic e-commerce data used in all the case studies. It's the source of truth for the data.
+*   **[sql_stories_skills_builder](https://github.com/G-Schumacher44/sql_stories_skills_builder)** `(Learning Lab)`
+    *   The public-facing skill-building suite. This is the main "product" where my published story modules are available for the community to use for practice and learning.
+*   **[`sql_stories_portfolio_demo`](https://github.com/G-Schumacher44/sql_stories_portfolio_demo/tree/main)** `(The Showcase)`
+    *   A curated and polished version of the best case studies, designed specifically to be a professional portfolio. It demonstrates the practical application of the tools and data from the other repositories.
+
+</details> 
 
 <details>
 <summary><strong>🫆 Version Release Notes</strong></summary>
@@ -188,17 +203,17 @@ ecom_sales_data_generator/
 
 After running the generator, you'll find in the `output/` folder:
 - `orders.csv`, `order_items.csv`, `returns.csv`, etc.
-- `load_data.sql` — ready-to-run script for loading into Postgres or SQLite
+- `load_data.sql` — A ready-to-run script for loading data into Postgres or SQLite.
 
 #### `load_data.sql` (for SQLite)
-A YAML Schema defined Script that builds the database from your data
+A script, generated from your YAML table schema, that builds the database from your data.
   - This script includes:
     - `CREATE TABLE` statements with inferred schema
     - `COPY` or `INSERT` statements to populate the tables
   - How to Use load_data.sql
-    1. Open your SQL client (e.g., pgAdmin, DBeaver, terminal psql, SQLite CLI)
-	2.	Connect to your database (Postgres or SQLite recommended)
-	3.	Run the script:
+    1. Open your SQL client (e.g., pgAdmin, DBeaver, terminal psql, SQLite CLI).
+	2. Connect to your database (Postgres or SQLite recommended).
+	3. Run the script:
 
 For SQLite:
 ```bash
@@ -341,8 +356,22 @@ This project is licensed under the [MIT License](LICENSE).</file>
 
 ---
 
-## 🔗 Ready to Explore?
+<div align="center">
+  <a href="#ecommerce-sales-database-generator">
+    ⬆️ <b>Back to Top</b>
+  </a>
+</div>
 
-Head to the [Config Guide](config_guide.md) to start generating your own custom e-commerce datasets — or visit the [SQL Stories Demo](https://github.com/G-Schumacher44/sql_stories) to see it used in real-world SQL challenges.
+<p align="center">
+  <a href="README.md">🏠 <b>Main README</b></a>
+  &nbsp;·&nbsp;
+  <a href="CONFIG_GUIDE.md">⚙️ <b>Config Guide</b></a>
+  &nbsp;·&nbsp;
+  <a href="TESTING_GUIDE.md">🧪 <b>Testing Guide</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/G-Schumacher44/sql_stories_portfolio_demo">📸 <b>See it in Action</b></a>
+</p>
 
-🔝 [Back to Top](#top) 
+<p align="center">
+  <sub>✨ Synthetic Data · Python · QA Framework ✨</sub>
+</p>

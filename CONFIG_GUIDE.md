@@ -158,4 +158,22 @@ The best way to learn is to experiment! Try changing the `conversion_rate` or th
 
 ---
 
-🔝 [Back to Top](#top) | ⬅️ [Back to Project README](README.md)
+<div align="center">
+  <a href="#configuration-guide">
+    ⬆️ <b>Back to Top</b>
+  </a>
+</div>
+
+<p align="center">
+  <a href="README.md">🏠 <b>Main README</b></a>
+  &nbsp;·&nbsp;
+  <a href="CONFIG_GUIDE.md">⚙️ <b>Config Guide</b></a>
+  &nbsp;·&nbsp;
+  <a href="TESTING_GUIDE.md">🧪 <b>Testing Guide</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/G-Schumacher44/sql_stories_portfolio_demo">📸 <b>See it in Action</b></a>
+</p>
+
+<p align="center">
+  <sub>✨ Synthetic Data · Python · QA Framework ✨</sub>
+</p>
