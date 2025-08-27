@@ -22,17 +22,20 @@ This guide explains how to structure and modify the YAML configuration file [`�
 
 ## 📚 Table of Contents
 
-- ⚙️ Configuration Guide
-  - 📚 Table of Contents
-  - 📁 Top-Level Sections
-  - 📊 Key Simulation Parameters
-    - Sales Funnel &amp; Conversion
-    - Customer Lifecycle &amp; Behavioral Modeling
-    - Earned Customer Value
-    - Returns &amp; Refunds
-    - Order &amp; Channel Behavior
-  - 📋 Tables vs. Lookup Config
-  - 🧪 Experimenting
+- [⚙️ Configuration Guide](#️-configuration-guide)
+  - [📚 Table of Contents](#-table-of-contents)
+  - [📁 Top-Level Sections](#-top-level-sections)
+  - [📊 Key Simulation Parameters](#-key-simulation-parameters)
+    - [Sales Funnel \& Conversion](#sales-funnel--conversion)
+    - [Customer Lifecycle \& Behavioral Modeling](#customer-lifecycle--behavioral-modeling)
+    - [Event-Driven \& Seasonal Behavior](#event-driven--seasonal-behavior)
+    - [Product \& Profitability](#product--profitability)
+    - [Operational Financials](#operational-financials)
+    - [Earned Customer Value](#earned-customer-value)
+    - [Returns \& Refunds](#returns--refunds)
+    - [Order \& Channel Behavior](#order--channel-behavior)
+  - [📋 Tables vs. Lookup Config](#-tables-vs-lookup-config)
+  - [🧪 Experimenting](#-experimenting)
 
 ## 📁 Top-Level Sections
 
@@ -158,11 +161,6 @@ The best way to learn is to experiment! Try changing the `conversion_rate` or th
 
 ---
 
-<div align="center">
-  <a href="#configuration-guide">
-    ⬆️ <b>Back to Top</b>
-  </a>
-</div>
 
 <p align="center">
   <a href="README.md">🏠 <b>Main README</b></a>

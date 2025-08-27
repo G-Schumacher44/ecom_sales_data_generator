@@ -121,12 +121,6 @@ For analysts and developers who want to perform a hands-on audit directly within
 
 ___
 
-<div align="center">
-  <a href="#testing-and-validation-guide">
-    ⬆️ <b>Back to Top</b>
-  </a>
-</div>
-
 <p align="center">
   <a href="README.md">🏠 <b>Main README</b></a>
   &nbsp;·&nbsp;

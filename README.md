@@ -354,13 +354,7 @@ Generative AI tools (Gemini 2.5-PRO, ChatGPT 4o - 4.1) were used throughout this
 
 This project is licensed under the [MIT License](LICENSE).</file>
 
----
-
-<div align="center">
-  <a href="#ecommerce-sales-database-generator">
-    ⬆️ <b>Back to Top</b>
-  </a>
-</div>
+___
 
 <p align="center">
   <a href="README.md">🏠 <b>Main README</b></a>
