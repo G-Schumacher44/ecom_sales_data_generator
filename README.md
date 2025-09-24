@@ -29,6 +29,7 @@ ___
 - CLI runner, Pytest test suite, and optional big/mess audit extensions
 - Designed for SQL project demos, portfolio datasets, and analytics onboarding
 
+
 <details>
 <summary> ⏯️ Quick Start</summary>
 
@@ -58,6 +59,21 @@ This project provides everything needed to simulate a realistic online retailer�
 - **QA Framework**: Includes an automated Python suite (`qa_tests.py`) for validating data logic and a manual SQL script (`scripts/db_integrity_check.sql`) for direct database schema and integrity auditing.
 - **CLI Interface**: One-command generation + validation from terminal or VS Code tasks
 - **Editable Dev Mode**: Install via `pip install -e .` for active development and local CLI usage
+
+### 📊 Database Overview
+
+| Table Name        | Key Fields                                  | Purpose                                    |
+| ----------------- | ------------------------------------------- | ------------------------------------------ |
+| `orders`          | `order_id`, `customer_id`                   | Completed transactions and shipping costs  |
+| `order_items`     | `order_item_id`, `order_id`, `product_id`   | Line-level product sales per order         |
+| `returns`         | `return_id`, `order_id`, `return_reason`    | Return metadata per order                  |
+| `return_items`    | `return_item_id`, `return_id`, `product_id` | Refunded products with values              |
+| `shopping_carts`  | `cart_id`, `customer_id`, `status`          | Tracks cart activity (open, abandoned)     |
+| `cart_items`      | `cart_item_id`, `cart_id`, `product_id`     | Products added to cart pre-purchase        |
+| `product_catalog` | `product_id`, `product_name`, `unit_price`  | SKU definitions and margin proxy           |
+| `customers`       | `customer_id`, `signup_date`                | Customer profiles and acquisition channels |
+
+> 📌 View the full reference: [`database_schema_reference.md`](database_schema_reference.md)
 
 
 ### 🧭 Orientation & Getting Started
