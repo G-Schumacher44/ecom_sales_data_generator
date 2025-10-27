@@ -123,9 +123,9 @@ This repository is one part of a larger, interconnected set of projects. Here’
 
 This repository is one part of a larger, interconnected set of projects. Here’s how they fit together:
 
-* **[`ecom_sales_data_generator`](https://github.com/G-Schumacher44/ecom_sales_data_generator)** `(The Engine)`  
+* **[`ecom_sales_data_generator`](https://github.com/G-Schumacher44/ecom_sales_data_generator)** `(The Engine - This repository)`  
   Generates realistic, relational ecommerce datasets. This extension imports it and keeps that repo focused on synthesis.
-* **[`ecom-datalake-exten`](https://github.com/G-Schumacher44/ecom-datalake-exten)** `(This Repo · The Lake Layer)`  
+* **[`ecom-datalake-exten`](https://github.com/G-Schumacher44/ecom-datalake-exten)** `(The Lake Layer)`  
   Converts generator output to Parquet, attaches lineage, and publishes to raw/bronze buckets.
 * **[`sql_stories_skills_builder`](https://github.com/G-Schumacher44/sql_stories_skills_builder)** `(Learning Lab)`  
   Publishes the story modules and exercises that use these datasets for hands-on practice.
